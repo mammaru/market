@@ -5,12 +5,12 @@ require 'logger'
 
 ROOT = ENV["ROOT"]
 
-namespace :db do
+namespace :stock do
 
   task :environment do
     p ENV["ROOT"]
     MIGRATIONS_DIR = "#{ROOT}/migrate"
-    SOURCE = "db"
+    SOURCE = "stock"
   end
 
   task :configuration => :environment do
