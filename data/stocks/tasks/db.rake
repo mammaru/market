@@ -6,24 +6,22 @@ require 'logger'
 ROOT = ENV["ROOT"]
 
 namespace :db do
-  
+
   task :environment do
-    MIGRATIONS_DIR = "#{ROOT}/db/migrate"
-    DB = "db"
-    DEV_ENV = ENV["ENV"] || "development"
+    p ENV["ROOT"]
+    MIGRATIONS_DIR = "#{ROOT}/migrate"
+    SOURCE = "db"
   end
-  
+
   task :configuration => :environment do
-    puts "Environment : " + DEV_ENV 
-    @dbconfig = YAML::load(File.open("#{ROOT}/config/database.yml"))[DB][DEV_ENV]
-    #p @dbconfig
+    @dbconfig = YAML::load(File.open("#{ROOT}/data/config.yml"))[SOURCE]
   end
 
   task :configure_connection => :configuration do
     ActiveRecord::Base.establish_connection(@dbconfig)
-    ActiveRecord::Base.logger = Logger.new("#{ROOT}/db/database.log")
+    ActiveRecord::Base.logger = Logger.new("#{ROOT}/log/migration.log")
   end
-  
+
   desc "Migrate database by script in db/migrate"
   task :migrate => :configure_connection do
     ActiveRecord::Migrator.migrate(MIGRATIONS_DIR, ENV["VERSION"] ? ENV["VERSION"].to_i : nil )
@@ -33,7 +31,7 @@ namespace :db do
   task :rollback => :configure_connection do
     ActiveRecord::Migrator.rollback(MIGRATIONS_DIR, ENV["STEP"] ? ENV["STEP"].to_i : 1)
   end
-  
+
   desc "Drop database"
   task :drop => :configure_connection do
     db_name = @dbconfig["database"]
@@ -56,5 +54,5 @@ namespace :db do
       end
     end
   end
-  
+
 end

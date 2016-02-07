@@ -1,8 +1,12 @@
 # Definition of objects mapped to database 
-class Name < ActiveRecord::Base
-  has_one :price dependent: :destroy
+class Price < ActiveRecord::Base
+  belongs_to :name, :date
 end
 
-class Price < ActiveRecord::Base
-  belongs_to :name
+class Name < ActiveRecord::Base
+  has_many :prices dependent: :destroy
+end
+
+class Date < ActiveRecord::Base
+  has_many :prices
 end
