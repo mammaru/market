@@ -8,7 +8,7 @@ Dir["#{ROOT}/lib/*.rb"].each do |path|
   require path
 end
 
-namespace :db do
+namespace :stock do
 
   task :environment do
     MIGRATIONS_DIR = "#{ROOT}/migrate"
