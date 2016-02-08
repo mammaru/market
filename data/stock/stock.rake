@@ -7,12 +7,10 @@ ROOT = __dir__
 Dir["#{ROOT}/lib/*.rb"].each do |path|
   require path
 end
-#require "#{ROOT}/lib/models.rb"
 
 namespace :db do
 
   task :environment do
-    p ENV["ROOT"]
     MIGRATIONS_DIR = "#{ROOT}/migrate"
     CONFIG = "#{ROOT}/config.yml"
     LOG = "#{ROOT}/log/database.log"
@@ -57,7 +55,7 @@ namespace :db do
     dir = Dir.open("#{ROOT}/txt/#{ENV["YEAR"]}/")
     dir.each do |f|
       if File.extname(f) == ".txt"
-        file = open("#{ROOT}/txt/#{ENV["YEAR"]}/#{f}")
+        file = open("#{dir+f}")
         ymd = file.gets.encode("utf-8", "Shift_JIS").chomp
         yy, mm, dd = ymd[0..3], ymd[4..5], ymd[6..7]
         puts date = Time.new(yy,mm,dd).strftime("%Y-%m-%d")

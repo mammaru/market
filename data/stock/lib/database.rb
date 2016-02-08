@@ -15,20 +15,25 @@ require 'models.rb'
 class DataBase
   include Singleton
 
-  def initialize(from, to)
-    @source = "db"
-    @dbconfig = YAML::load(File.open("#{ENV["ROOT"]}/config.yml"))[@source]
+  def initialize(config, log_path, mig_path)
+    @config, @log_path, @mig_path = config, log_path, mig_path
     # retrieve or create connection to database
-    ActiveRecord::Base.establish_connection(@dbconfig)
-    unless  (ActiveRecord::Base.connection.table_exists? "names" and
-             ActiveRecord::Base.connection.table_exists? "prices") then
-      # create database and migrate
-      p "execute migration."
-      ActiveRecord::Base.logger = Logger.new("#{ENV["ROOT"]}/database.log")
-      ActiveRecord::Migrator.migrate("#{ENV["ROOT"]}/migrate")
+    ActiveRecord::Base.establish_connection(@config)
+    ActiveRecord::Base.logger = Logger.new(@log_path)
+    if ActiveRecord::Migrator.current_version < 1
+      self.migrate
+      p "Execute migration."
     end
   end
 
+  def migrate(version)
+    ActiveRecord::Migrator.migrate(@mig_path, version ? version.to_i : nil)
+  end
+
+  def rollback(step)
+    ActiveRecord::Migrator.rollback(@mig_path, step ? step.to_i : 1)
+  end
+  
   def name
     Name.all
   end
