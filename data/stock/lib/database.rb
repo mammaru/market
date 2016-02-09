@@ -39,7 +39,7 @@ class DataBase
     puts "Current version: #{ActiveRecord::Migrator.current_version}"
   end
   
-  def name
+  def names
     Name.all
   end
 

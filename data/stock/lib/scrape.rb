@@ -18,6 +18,7 @@ module Stock
     #Create directory if not exist
     FileUtils.mkdir_p(path_to_save) unless FileTest.exist?(path_to_save)
 
+    # Download and load data
     if Date.parse(date.strftime("%Y-%m-%d")).wday%6==0
       puts "Failed: #{date.strftime("%Y-%m-%d")} might be holiday"
       return nil
