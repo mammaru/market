@@ -1,7 +1,6 @@
 # coding: utf-8
-require 'active_record'
 require 'yaml'
-require 'logger'
+require 'date'
 
 ROOT = __dir__
 Dir["#{ROOT}/lib/*.rb"].each do |path|
@@ -11,73 +10,87 @@ end
 namespace :stock do
 
   task :environment do
-    MIGRATIONS_DIR = "#{ROOT}/migrate"
-    CONFIG = "#{ROOT}/config.yml"
-    LOG = "#{ROOT}/log/database.log"
+    CONFIG_YAML = "#{ROOT}/config.yml"
+    MIGRATION_DIR = "#{ROOT}/migrate"
+    LOG_DIR = "#{ROOT}/log"
   end
 
-  task :configuration => :environment do
-    @dbconfig = YAML::load(File.open(CONFIG))["db"]
-  end
+  namespace :daily do
+    task :configuration => :environment do
+      yml = YAML::load(File.open(CONFIG_YAML))
+      @year = yml["year"]
+      @dbconfig = yml["db"]
 
-  task :configure_connection => :configuration do
-    ActiveRecord::Base.establish_connection(@dbconfig)
-    ActiveRecord::Base.logger = Logger.new(LOG)
-  end
+      @daily_config = @dbconfig["daily"]
+      @daily_config["database"] = "#{ROOT}/daily/#{@year}.sqlite3"
+      @daily_log = "#{LOG_DIR}/daily.log"
+    end
 
-  desc "Migrate database by script in db/migrate"
-  task :migrate => :configure_connection do
-    ActiveRecord::Migrator.migrate(MIGRATIONS_DIR, ENV["VERSION"] ? ENV["VERSION"].to_i : nil )
-  end
+    task :configure_connection => :configuration do
+      DB = DataBase.new([@daily_config, @daily_log, MIGRATION_DIR])
+    end
 
-  desc "Roll back database schema to the previous version"
-  task :rollback => :configure_connection do
-    ActiveRecord::Migrator.rollback(MIGRATIONS_DIR, ENV["STEP"] ? ENV["STEP"].to_i : 1)
-  end
+    desc "Migrate database"
+    task :migrate => :configure_connection do
+      DB.migrate(ENV["VERSION"] ? ENV["VERSION"].to_i : nil)
+    end
 
-  desc "Drop database"
-  task :drop, ["year"] => :configure_connection do |task, args|
-    p task
-    p args.year
-    db_name = "#{args.year}.sqlite3"
-    puts "Drop #{db_name}"
-    ActiveRecord::Base.connection.drop_database db_name
-  end
+    desc "Roll back database schema to the previous version"
+    task :rollback => :configure_connection do
+      DB.rollback(ENV["STEP"] ? ENV["STEP"].to_i : 1)
+    end
 
-  desc "Retrieves the current schema version number"
-  task :version => :configure_connection do
-    puts "Current version: #{ActiveRecord::Migrator.current_version}"
-  end
+    desc "Drop database"
+    task :drop => :configure_connection do
+      DB.drop
+    end
 
-  desc "Store annual data from txt files"
-  task :store, ["year"] => :configure_connection do |task, args|
-    #require './lib/models.rb'
-    dir = Dir.open("#{ROOT}/txt/#{ENV["YEAR"]}/")
-    dir.each do |f|
-      if File.extname(f) == ".txt"
-        file = open("#{dir+f}")
-        ymd = file.gets.encode("utf-8", "Shift_JIS").chomp
-        yy, mm, dd = ymd[0..3], ymd[4..5], ymd[6..7]
-        puts date = Time.new(yy,mm,dd).strftime("%Y-%m-%d")
-        unless d = Dating.find_by_date(date)
-          d = Dating.create(:date => date)
+    desc "Retrieves the current schema version number"
+    task :version => :configure_connection do
+      DB.version
+    end
+
+    desc "Store daily values"
+    task :values_of => :configure_connection do
+      date = Date.parse(ENV["DATE"].to_s)
+      if date.strftime("%Y")==@year.to_s
+        if daily_stocks = Stock::day(date)
+          DB.store(daily_stocks)
         end
-        file.each_line do |stock|
-          code, name, open, high, low, close, volume = stock.encode("utf-8", "Shift_JIS").chomp.split("\t")
-          unless n = Name.find_by_code(code)
-            Name.create(:code => code, :name => name)
+      else
+        raise "setting of year in config.yml must be #{date.strftime("%Y")}"
+      end
+    end
+
+    desc "Update reacent stocks"
+    task :update => :configure_connection do
+      from = Date.parse(DB.last_modified.to_s) + 1
+      today = Date.today
+      if today.strftime("%Y")==@year.to_s
+        p "Update stocks from #{from} to #{today}"
+        from.upto(today) do |d|
+          if daily_stocks = Stock::day(d)
+            DB.store(daily_stocks)
           end
-          Price.create(:code => code,
-                       :dating_id => d.id,
-                       :open => open,
-                       :high => high,
-                       :low => low,
-                       :close => close,
-                       :volume => volume)
         end
-        file.close
+      else
+        raise "setting of year in config.yml must be #{today.strftime("%Y")}"
+      end
+    end
+
+    desc "Store annual data"
+    task :all => :configure_connection do
+      nyd = Date.parse("#{@year}-01-01")
+      nye = (Date.parse("#{@year}-12-31")<Date.today) ? Date.parse("#{@year}-12-31") : Date.yesterday
+      nyd.upto(nye) do |d|
+        if daily_stocks = Stock::day(d)
+          DB.store(daily_stocks)
+        end
       end
     end
   end
 
 end
+
+  
+

@@ -8,7 +8,7 @@ class CreatePrices < ActiveRecord::Migration
       t.integer :low
       t.integer :close
       t.float :volume
-      t.timestamps
+      t.timestamps null: false
     end
   end
 end

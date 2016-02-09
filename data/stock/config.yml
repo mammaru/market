@@ -4,8 +4,23 @@
 #   Ensure the SQLite 3 gem is defined in your Gemfile
 #   gem 'sqlite3'
 
+year: 2014
+
 db:
-  adapter: sqlite3
-  database: stocks/2015.sqlite3
-  pool: 5
-  timeout: 5000
+  daily:
+    adapter: sqlite3
+    database: daily
+    pool: 5
+    timeout: 5000
+
+  5_minutes:
+    adapter: sqlite3
+    database: 5_minutes
+    pool: 5
+    timeout: 5000
+
+  minute:
+    adapter: sqlite3
+    database: 1_minute
+    pool: 5
+    timeout: 5000

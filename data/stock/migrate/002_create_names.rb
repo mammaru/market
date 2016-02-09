@@ -3,7 +3,7 @@ class CreateNames < ActiveRecord::Migration
     create_table :names, {id: false, primary_key: :code} do |t|
       t.integer :code
       t.string :name
-      t.timestamps
+      t.timestamps null: false
     end
   end
 end
