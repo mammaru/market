@@ -1,24 +1,32 @@
 # coding: utf-8
 import numpy as np
 import pandas as pd
-from scipy import stats
+#from scipy import stats
 from scipy import io, sparse
-from multiprocessing import Pool
-from numba import jit
+#from multiprocessing import Pool
+#from numba import jit
 import json
 import sqlite3
 
+import os
+
 class DataBase:
-	def __init__(self, data_size):
-		#self.type = data_type
-		self.size = data_size
-		self.conn = sqlite3.connect('./db/'+self.size+'.sqlite3')
-		self.conn.execute('''create table if not exists features(name text primary key, feature text, number integer);''')
-		self.conn.execute('''create table if not exists train(id integer primary key, inputs text, output integer);''')
-		self.conn.execute('''create table if not exists train_features(train_id integer, feature_name text);''')
-		self.conn.execute('''create table if not exists test(id integer primary key, inputs text);''')
-		self.conn.execute('''create table if not exists test_features(test_id integer, feature_name text);''')
-		#conn.execute(u"DELETE FROM features")
+	def __init__(self):
+		self.available = self.__get_available()
+		self.summary()
+
+	def __get_available(self):
+		types = get_dir_file('../data/')[0]
+		available = {}
+		for data_type in types:
+			available[data_type] = os.path.abspath(os.path.dirname('../data/'+data_type+'/db/'))
+		return available		
+
+	def summary(self):
+		print "Summary--------------------------------------:"
+		print self.available
+		for k, v in self.available:
+			print k, v
 
 	def store(self):
 		c = self.conn
@@ -85,26 +93,6 @@ class DataBase:
 			c.commit()
 		self.summary()	
 		#c.close()
-
-	def summary(self):
-		c = self.conn.cursor()
-		c.execute('select count(name) from features')
-		self.p = [ft[0] for ft in c][0]
-		c.execute('select count(name) from features where feature="X"')
-		self.p_X = [ft[0] for ft in c][0]
-		c.execute('select count(name) from features where feature="Y"')
-		self.p_Y = [ft[0] for ft in c][0]
-		c.execute('select count(name) from features where feature="Z"')
-		self.p_Z = [ft[0] for ft in c][0]
-		c.execute('select count(id) from train')
-		self.N_train = [ft[0] for ft in c][0]
-		c.execute('select count(id) from test')
-		self.N_test = [ft[0] for ft in c][0]
-		c.close()
-		print "Summary--------------------------------------:"
-		print self.p, "features ( X:", self.p_X, "Y:", self.p_Y, "Z:", self.p_Z, ")"
-		print self.N_train, "training samples"
-		print self.N_test, "test samples"
 
 	#@jit
 	def features(self, set=True, test=False):
@@ -286,6 +274,26 @@ class DataBase:
 			sp_mat = np.load('large-'+type+'.npy')
 		mt = sp_mat.todense()
 		return mt
+
+
+def get_dir_file(path):
+	dirs = []
+	files = []
+	for item in os.listdir(path):
+		if item == '.DS_Store': continue
+		dirs.append(item) if os.path.isdir(os.path.abspath(path)+'/'+item) else files.append(item)
+	return dirs, files
+
+
+
+
+
+
+
+
+
+
+
 
 def get_features(size):
 	print 'createing set of features'

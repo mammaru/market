@@ -22,7 +22,7 @@ namespace :stock do
       @dbconfig = yml["db"]
 
       @daily_config = @dbconfig["daily"]
-      @daily_config["database"] = "#{ROOT}/daily/#{@year}.sqlite3"
+      @daily_config["database"] = "#{ROOT}/db/daily/#{@year}.sqlite3"
       @daily_log = "#{LOG_DIR}/daily.log"
     end
 
