@@ -6,93 +6,77 @@ from scipy import io, sparse
 #from multiprocessing import Pool
 #from numba import jit
 import json
+import datetime
 import sqlite3
 
 import os
 
 class DataBase:
 	def __init__(self):
-		self.available = self.__get_available()
+		self.available_databases = [path for path in self.__get_available_databases('data')]
 		self.summary()
 
-	def __get_available(self):
-		types = get_dir_file('../data/')[0]
-		available = {}
-		for data_type in types:
-			available[data_type] = os.path.abspath(os.path.dirname('../data/'+data_type+'/db/'))
-		return available		
+	def __get_available_databases(self, root):
+		""" search *.sqlite3 files recursively from given root"""
+		for i in walk_tree(root):
+			if '.sqlite3' in i:
+				yield os.path.abspath(i)
 
+	def __search_database(self, word):
+		db_path = []
+		for path in self.available_databases:
+			if word in path:
+				db_path.append(path)
+		return db_path
+
+	def __connect_database(self, path):
+		self.cursor = sqlite3.connect(path).cursor()
+
+	def __disconnect_database(self):
+		self.cursor.close()
+		
 	def summary(self):
+		""" pretty print of available data sources"""
 		print "Summary--------------------------------------:"
-		print self.available
-		for k, v in self.available:
-			print k, v
+		print "Available data sources are:"
+		for path in self.available_databases:
+			print path
 
-	def store(self):
-		c = self.conn
-		""" storing features """
-		print 'loading file'
-		inputs = []		
-		with open('./data/training-data-'+self.size+'.txt','r') as f:
-			for line in f:
-				inputs.extend([x.strip('\n').replace('X,','').replace('Y,','') for x in (line.split('\t'))[1].split(',')])
-		inputs_set = sorted([x for x in set(inputs)])
-		i = 0
-		l = []
-		print "storing features into database"
-		for x in inputs_set:
-			if(x!='' and len(x)>1):
-				l.append((x, x[0], int(x[1:])))
-				i += 1
-				if i % 100000 == 0:
-					c.executemany('insert into features (name,feature,number) values(?,?,?)',l)
-					c.commit()
-					l = []
-		c.executemany('insert into features (name,feature,number) values(?,?,?)',l)
-		c.commit()
-		""" storing data """
-		with open('./data/training-data-'+self.size+'.txt','r') as f:
-			print "storing training data"
-			i = 0
-			l = []
-			ll = []
-			for line in f:
-				tmp = line.strip('\n').replace('X,','').replace('Y,','').split('\t')
-				l.append((i, tmp[1], int(tmp[0])))				
-				inputs = tmp[1].split(',')
-				ll.extend([(i, x) for x in inputs])
-				i += 1
-				if i % 100000 == 0:
-					c.executemany('insert into train(id,inputs,output) values(?,?,?)',l)
-					c.executemany('insert into train_features(train_id,feature_name) values(?,?)',ll)
-					c.commit()
-					l = []
-					ll = []
-			c.executemany('insert into train(id,inputs,output) values(?,?,?)',l)
-			c.executemany('insert into train_features(train_id,feature_name) values(?,?)',ll)
-			c.commit()
-		with open('./data/test-data-'+self.size+'.txt','r') as f:
-			print "storing test data"
-			i = 0
-			l = []
-			ll = []
-			for line in f:
-				tmp = line.strip('\n').replace('X,','').replace('Y,','')
-				l.append((i, tmp))				
-				inputs = tmp.split(',')
-				ll.extend([(i, x) for x in inputs])
-				i += 1
-				if i % 100000 == 0:
-					c.executemany('insert into test(id,inputs) values(?,?)',l)
-					c.executemany('insert into test_features(test_id,feature_name) values(?,?)',ll)
-					c.commit()
-					l = []
-					ll = []
-			c.executemany('insert into test(id,inputs) values(?,?)',l)
-			c.executemany('insert into test_features(test_id,feature_name) values(?,?)',ll)
-			c.commit()
-		self.summary()	
-		#c.close()
+	def stock(self, *dates):
+		if dates:
+			if len(dates)==1:
+				date = str_to_date(dates[0])
+				print date
+				db_path = self.__search_database(str(date.year))
+				print db_path
+				self.__connect_database(db_path[0])
+				sql = 'select id from datings where date glob \''+date.strftime('%Y-%m-%d')+'*\''
+				print 'Execute SQL:', '\''+sql+'\''
+				self.cursor.execute(sql)
+				date_id = self.cursor.fetchall()[0][0]
+				self.__disconnect_database()
+				self.__connect_database(db_path[0])
+				sql = 'select code, open, high, low, close from prices where dating_id='+str(date_id)+''
+				print 'Execute SQL:', '\''+sql+'\''
+				self.cursor.execute(sql)
+				#sts = self.cursor.fetchall()
+				sts = []
+				for st in self.cursor:
+					s = {}
+					s['code'] = st[0]
+					s['price'] = {}
+					s['price']['open'],s['price']['high'],s['price']['low'],s['price']['close'] = st[1:]
+					sts.append(s)
+				self.__disconnect_database()
+				sts = {'date':date, 'stocks':sts}
+				return sts
+			else:
+				from_ = str_to_date(date[0]).year
+				to_ = str_to_date(date[1]).year
+
+
+
+
 
 	#@jit
 	def features(self, set=True, test=False):
@@ -276,15 +260,44 @@ class DataBase:
 		return mt
 
 
+
+
+
+
+
+
+
+
+def str_to_date(str_date):
+	try:
+		if (len(str_date)==10 and ':' not in str_date):
+			str_date += ' 00:00:00'		
+		tstr = str_date.replace('/','-')
+		tdatetime = datetime.datetime.strptime(tstr, '%Y-%m-%d %H:%M:%S')
+		
+		tdate = datetime.date(tdatetime.year, tdatetime.month, tdatetime.day)
+	except:
+		if type(str_date) is not str:
+			raise TypeError('given date is not string')
+		else:
+			print 'Format: \"2000-01-01 10:00:00\" or \"2000-01-01\"'
+			raise
+	else:
+		return tdate
+
 def get_dir_file(path):
 	dirs = []
 	files = []
 	for item in os.listdir(path):
 		if item == '.DS_Store': continue
-		dirs.append(item) if os.path.isdir(os.path.abspath(path)+'/'+item) else files.append(item)
+		dirs.append(item) if os.path.isdir(os.path.join(os.path.abspath(path),item)) else files.append(item)
 	return dirs, files
 
-
+def walk_tree(directory):
+    for root, dirs, files in os.walk(directory):
+        yield root
+        for f in files:
+            yield os.path.join(root, f)
 
 
 
