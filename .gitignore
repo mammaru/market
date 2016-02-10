@@ -1,6 +1,7 @@
 # files
 .DS_Store
 *.sqlite3
+*.pyc
 
 # directries
 log/
