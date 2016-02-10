@@ -1,20 +1,14 @@
 # coding: utf-8
-import numpy as np
-import pandas as pd
-#from scipy import stats
-from scipy import io, sparse
-#from multiprocessing import Pool
-#from numba import jit
 import json
 import datetime
 import sqlite3
-
 import os
+
+default_db_dir = os.path.abspath(os.path.join(__file__,'../../../data'))
 
 class DataBase:
 	def __init__(self):
-		self.available_databases = [path for path in self.__get_available_databases('data')]
-		self.summary()
+		self.available_databases = [path for path in self.__get_available_databases(default_db_dir)]
 
 	def __get_available_databases(self, root):
 		""" search *.sqlite3 files recursively from given root"""
@@ -42,38 +36,31 @@ class DataBase:
 		for path in self.available_databases:
 			print path
 
-	def stock(self, *dates):
-		if dates:
-			if len(dates)==1:
-				date = str_to_date(dates[0])
-				print date
-				db_path = self.__search_database(str(date.year))
-				print db_path
-				self.__connect_database(db_path[0])
-				sql = 'select id from datings where date glob \''+date.strftime('%Y-%m-%d')+'*\''
-				print 'Execute SQL:', '\''+sql+'\''
-				self.cursor.execute(sql)
-				date_id = self.cursor.fetchall()[0][0]
-				self.__disconnect_database()
-				self.__connect_database(db_path[0])
-				sql = 'select code, open, high, low, close from prices where dating_id='+str(date_id)+''
-				print 'Execute SQL:', '\''+sql+'\''
-				self.cursor.execute(sql)
-				#sts = self.cursor.fetchall()
-				sts = []
-				for st in self.cursor:
-					s = {}
-					s['code'] = st[0]
-					s['price'] = {}
-					s['price']['open'],s['price']['high'],s['price']['low'],s['price']['close'] = st[1:]
-					sts.append(s)
-				self.__disconnect_database()
-				sts = {'date':date, 'stocks':sts}
-				return sts
-			else:
-				from_ = str_to_date(date[0]).year
-				to_ = str_to_date(date[1]).year
-
+	def stock(self, date):
+		date = str_to_date(date)
+		print date
+		db_path = self.__search_database(str(date.year))
+		print db_path
+		self.__connect_database(db_path[0])
+		sql = 'select id from datings where date glob \''+date.strftime('%Y-%m-%d')+'*\''
+		print 'Execute SQL:', '\''+sql+'\''
+		self.cursor.execute(sql)
+		date_id = self.cursor.fetchall()[0][0]
+		self.__disconnect_database()
+		self.__connect_database(db_path[0])
+		sql = 'select code, open, high, low, close from prices where dating_id='+str(date_id)+''
+		print 'Execute SQL:', '\''+sql+'\''
+		self.cursor.execute(sql)
+		sts = []
+		for st in self.cursor:
+			s = {}
+			s['code'] = st[0]
+			s['price'] = {}
+			s['price']['open'],s['price']['high'],s['price']['low'],s['price']['close'] = st[1:]
+			sts.append(s)
+		self.__disconnect_database()
+		sts = {'date':date, 'stocks':sts}
+		return sts
 
 
 

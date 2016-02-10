@@ -2,8 +2,12 @@ import numpy as np
 import pandas as pd
 import networkx as nx
 from matplotlib import pyplot as plt
-from svar import *
-from kalman import *
+import sys,os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/lib')
+from database import db
+import ts
+#from svar import *
+#from kalman import *
 
 def draw_heatmap(data, **labels):
 	fig, axis = plt.subplots(figsize=(10, 10))
@@ -25,21 +29,13 @@ def draw_heatmap(data, **labels):
 
 
 if __name__ == "__main__":
-	if 0:
-		filename = "./ignr/data/exchange.dat"
-		#data = np.loadtxt(filename, delimiter="\t")
-		df = pd.read_table(filename, index_col="datetime")
-		df.index = pd.to_datetime(df.index) # convert index into datetime
-		#hourly = df.resample("H", how="mean") # hourly
-		daily = df.resample("D", how="mean") # daily
-		price = daily.ix[:, daily.columns.map(lambda x: x.endswith("PRICE"))]
-		volume = daily.ix[:, daily.columns.map(lambda x: x.endswith("VOLUME"))]
-
 	if 1:
-		filename = "./ignr/data/qn_PC9_EGF.log2.Name.Uniq.NaN.Shift.v2.139genes.dat"
+		d = db.DataBase()
+		prices = d.stock('2016-02-02')
+		print prices['date'], prices['stocks'][0]
+		#filename = "./ignr/data/exchange.dat"
 		#data = np.loadtxt(filename, delimiter="\t")
-		exprs = pd.read_table(filename, index_col="D...1.").T
-		exprs = exprs.fillna(0)
+		#df = pd.read_table(filename, index_col="datetime")
 		#df.index = pd.to_datetime(df.index) # convert index into datetime
 		#hourly = df.resample("H", how="mean") # hourly
 		#daily = df.resample("D", how="mean") # daily
@@ -48,7 +44,7 @@ if __name__ == "__main__":
 
 
 	# SVAR
-	if 1:
+	if 0:
 		data = exprs
 		svar = SparseVAR()
 		svar.set_data(data)
@@ -57,7 +53,7 @@ if __name__ == "__main__":
 		interval = np.arange(0,3,0.5)
 		B = svar.GCV(interval)
 		B = DataFrame(B.T, index=data.columns, columns=data.columns)
-	if 1:
+	if 0:
 		draw_heatmap(np.array(B))
 	if 0:
 		DG = nx.DiGraph()
