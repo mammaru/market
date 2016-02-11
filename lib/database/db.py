@@ -1,8 +1,10 @@
 # coding: utf-8
 import json
-import datetime
+#import datetime
 import sqlite3
 import os
+
+from util import *
 
 default_db_dir = os.path.abspath(os.path.join(__file__,'../../../data'))
 
@@ -38,29 +40,32 @@ class DataBase:
 
 	def stock(self, date):
 		date = str_to_date(date)
-		print date
+		#print date
 		db_path = self.__search_database(str(date.year))
-		print db_path
+		#print db_path
 		self.__connect_database(db_path[0])
 		sql = 'select id from datings where date glob \''+date.strftime('%Y-%m-%d')+'*\''
-		print 'Execute SQL:', '\''+sql+'\''
+		#print 'Execute SQL:', '\''+sql+'\''
 		self.cursor.execute(sql)
-		date_id = self.cursor.fetchall()[0][0]
-		self.__disconnect_database()
-		self.__connect_database(db_path[0])
-		sql = 'select code, open, high, low, close from prices where dating_id='+str(date_id)+''
-		print 'Execute SQL:', '\''+sql+'\''
-		self.cursor.execute(sql)
-		sts = []
-		for st in self.cursor:
-			s = {}
-			s['code'] = st[0]
-			s['price'] = {}
-			s['price']['open'],s['price']['high'],s['price']['low'],s['price']['close'] = st[1:]
-			sts.append(s)
-		self.__disconnect_database()
-		sts = {'date':date, 'stocks':sts}
-		return sts
+		try:
+			date_id = self.cursor.fetchall()[0][0]
+			self.__disconnect_database()
+			self.__connect_database(db_path[0])
+			sql = 'select code, open, high, low, close from prices where dating_id='+str(date_id)+''
+			#print 'Execute SQL:', '\''+sql+'\''
+			self.cursor.execute(sql)
+			sts = []
+			for st in self.cursor:
+				s = {}
+				s['code'] = st[0]
+				s['price'] = {}
+				s['price']['open'],s['price']['high'],s['price']['low'],s['price']['close'] = st[1:]
+				sts.append(s)
+			self.__disconnect_database()
+			sts = {'date':date, 'stocks':sts}
+			return sts
+		except:
+			return 
 
 
 
@@ -255,36 +260,6 @@ class DataBase:
 
 
 
-def str_to_date(str_date):
-	try:
-		if (len(str_date)==10 and ':' not in str_date):
-			str_date += ' 00:00:00'		
-		tstr = str_date.replace('/','-')
-		tdatetime = datetime.datetime.strptime(tstr, '%Y-%m-%d %H:%M:%S')
-		
-		tdate = datetime.date(tdatetime.year, tdatetime.month, tdatetime.day)
-	except:
-		if type(str_date) is not str:
-			raise TypeError('given date is not string')
-		else:
-			print 'Format: \"2000-01-01 10:00:00\" or \"2000-01-01\"'
-			raise
-	else:
-		return tdate
-
-def get_dir_file(path):
-	dirs = []
-	files = []
-	for item in os.listdir(path):
-		if item == '.DS_Store': continue
-		dirs.append(item) if os.path.isdir(os.path.join(os.path.abspath(path),item)) else files.append(item)
-	return dirs, files
-
-def walk_tree(directory):
-    for root, dirs, files in os.walk(directory):
-        yield root
-        for f in files:
-            yield os.path.join(root, f)
 
 
 
