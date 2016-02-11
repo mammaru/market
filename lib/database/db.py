@@ -6,7 +6,7 @@ import os
 
 from util import *
 
-default_db_dir = os.path.abspath(os.path.join(__file__,'../../../data'))
+default_db_dir = os.path.abspath(os.path.join(__file__, '../../../data'))
 
 class DataBase:
 	def __init__(self):
@@ -37,6 +37,18 @@ class DataBase:
 		print "Available data sources are:"
 		for path in self.available_databases:
 			print path
+
+	def code(self):
+		all_codes = {}
+		for path in self.available_databases:
+			self.__connect_database(path)
+			sql = 'select code, name from names'
+			self.cursor.execute(sql)
+			codes = {}
+			for c, n in self.cursor:
+				codes.update({c:n})
+			all_codes.update(codes)
+		return all_codes
 
 	def stock(self, date):
 		date = str_to_date(date)

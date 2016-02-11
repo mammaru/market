@@ -4,7 +4,8 @@ import networkx as nx
 from matplotlib import pyplot as plt
 import sys,os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/lib')
-from database import db
+#print sys.argv[0]
+from database import io
 import ts
 #from svar import *
 #from kalman import *
@@ -30,9 +31,14 @@ def draw_heatmap(data, **labels):
 
 if __name__ == "__main__":
 	if 1:
-		d = db.DataBase()
-		prices = d.stock('2016-02-02')
-		print prices['date'], prices['stocks'][0]
+		st = io.Stock()
+		s = st.get_close('2015-01-05',10)
+		print s
+
+		#d = db.DataBase()
+		#prices = d.stock('2016-02-02')
+		#print prices['date'], prices['stocks'][0]
+
 		#filename = "./ignr/data/exchange.dat"
 		#data = np.loadtxt(filename, delimiter="\t")
 		#df = pd.read_table(filename, index_col="datetime")

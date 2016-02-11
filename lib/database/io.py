@@ -38,14 +38,14 @@ class Stock:
 				d.append(st['date'])
 				ar = [s['price']['close'] for s in st['stocks']]
 				if len(codes)==0:
-					codes = [s['code'] for s in st['stocks']] 
-				#for s in st['stocks']:
-					#ar.append(s['price']['close'])
+					codes = [s['code'] for s in st['stocks']]
+				print len(ar)
 				arr.append(ar)
-			print d
-			return pd.DataFrame(np.array(arr),index=codes,columns=d)
+			return self.d.code()
+			#return np.array(arr)
+			#return pd.DataFrame(np.array(arr),index=codes,columns=d)
 
 if __name__ == '__main__':
 	st = Stock()
 	s = st.get_close('2015-01-05',10)
-	print s
+	print s.shape
