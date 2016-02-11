@@ -1,10 +1,11 @@
+# coding: utf-8
 import numpy as np
 import pandas as pd
 import networkx as nx
 from matplotlib import pyplot as plt
 import sys,os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/lib')
-#print sys.argv[0]
+
 from database import io
 import ts
 #from svar import *
@@ -32,8 +33,8 @@ def draw_heatmap(data, **labels):
 if __name__ == "__main__":
 	if 1:
 		st = io.Stock()
-		s = st.get_close('2015-01-05',10)
-		print s
+		s = st.get_close('2015-01-05',5)
+		print len(s)
 
 		#d = db.DataBase()
 		#prices = d.stock('2016-02-02')

@@ -3,6 +3,7 @@ import json
 #import datetime
 import sqlite3
 import os
+#import sys
 
 from util import *
 
@@ -39,16 +40,16 @@ class DataBase:
 			print path
 
 	def code(self):
-		all_codes = {}
+		all_codes = ()
 		for path in self.available_databases:
 			self.__connect_database(path)
 			sql = 'select code, name from names'
 			self.cursor.execute(sql)
-			codes = {}
-			for c, n in self.cursor:
-				codes.update({c:n})
-			all_codes.update(codes)
-		return all_codes
+			codes = [c for c, n in self.cursor]
+			#for c, n in self.cursor:
+				#codes.update({c:n.encode('utf-8',errors='ignore')})
+			all_codes += tuple(codes)
+		return sorted(set(all_codes))
 
 	def stock(self, date):
 		date = str_to_date(date)
