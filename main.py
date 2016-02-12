@@ -4,10 +4,10 @@ import pandas as pd
 import networkx as nx
 from matplotlib import pyplot as plt
 import sys,os
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/lib')
 
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/lib')
 from database import io
-import ts
+from ts import kalman, svar
 #from svar import *
 #from kalman import *
 
@@ -33,12 +33,39 @@ def draw_heatmap(data, **labels):
 if __name__ == "__main__":
 	if 1:
 		st = io.Stock()
-		s = st.get_close('2015-01-05',5)
-		print len(s)
+		price = st.get_close('2015-01-01',30)
+		#print price.describe()
 
-		#d = db.DataBase()
-		#prices = d.stock('2016-02-02')
-		#print prices['date'], prices['stocks'][0]
+		if 1:
+			# na
+			#price.interpolate()
+			#price.fillna(method='ffill') # fill na with next value
+			price.dropna(axis=1) # delete all clumns that has na element
+
+		if 1:
+			# logalization
+			price.applymap(lambda x: np.log(x))
+
+		if 1:
+			# normalization
+			m = price.mean(1)
+			s = price.std(1)
+			price = price.sub(m,axis=0).div(s,axis=0)
+
+		if 1:
+			#print price.columns.map(lambda x: x < 5000)
+			price = price.ix[:,price.columns.map(lambda x: x < 3000)]
+			#print data
+
+		#filename = "./ignr/data/qn_PC9_EGF.log2.Name.Uniq.NaN.Shift.v2.139genes.dat"
+		#data = np.loadtxt(filename, delimiter="\t")
+		#exprs = pd.read_table(filename, index_col="D...1.").T
+		#exprs = exprs.fillna(0)
+		#df.index = pd.to_datetime(df.index) # convert index into datetime
+		#hourly = df.resample("H", how="mean") # hourly
+		#daily = df.resample("D", how="mean") # daily
+		#price = daily.ix[:, daily.columns.map(lambda x: x.endswith("PRICE"))]
+		#volume = daily.ix[:, daily.columns.map(lambda x: x.endswith("VOLUME"))]
 
 		#filename = "./ignr/data/exchange.dat"
 		#data = np.loadtxt(filename, delimiter="\t")
@@ -51,16 +78,17 @@ if __name__ == "__main__":
 
 
 	# SVAR
-	if 0:
-		data = exprs
-		svar = SparseVAR()
+	if 1:
+		data = price
+		print data.describe()
+		svar = svar.SparseVAR()
 		svar.set_data(data)
 		#svar.regression(5)
 
 		interval = np.arange(0,3,0.5)
 		B = svar.GCV(interval)
 		B = DataFrame(B.T, index=data.columns, columns=data.columns)
-	if 0:
+	if 1:
 		draw_heatmap(np.array(B))
 	if 0:
 		DG = nx.DiGraph()
@@ -86,7 +114,7 @@ if __name__ == "__main__":
 	# kalman and EM
 	if 0:
 		sys_k = 5
-		em = EM(price, sys_k)
+		em = kalman.EM(price, sys_k)
 		em.execute()
 
 	if 0:

@@ -23,29 +23,22 @@ class Stock:
 		return sts
 
 	def get_close(self, *dates):
+		codes = self.d.code()
 		if len(dates)==1:
 			st = self.get(dates[0])
-			arr = []
+			closes = pd.DataFrame(index=[1], columns=codes)
 			for s in st['stocks']:
-				arr.append(s['price']['close'])
-			return np.array(arr)
+				closes[s['code']][1] = s['price']['close']
+			closes.index = [dates[0]]
+			#closes.append(skelton, index=dates[0])
+				#arr.append(s['price']['close'])
+			#return np.array(arr)
+			return closes
 		else:
 			sts = self.get(dates[0],dates[1])
-			arr = []
-			d = []
-			codes = []
+			closes = pd.DataFrame(columns=codes)
 			for st in sts:
-				d.append(st['date'])
-				ar = [s['price']['close'] for s in st['stocks']]
-				if len(codes)==0:
-					codes = [s['code'] for s in st['stocks']]
-				print len(ar)
-				arr.append(ar)
-			return self.d.code()
-			#return np.array(arr)
-			#return pd.DataFrame(np.array(arr),index=codes,columns=d)
-
-if __name__ == '__main__':
-	st = Stock()
-	s = st.get_close('2015-01-05',10)
-	print s.shape
+				closes = closes.append(pd.DataFrame(index=[st['date']], columns=codes))
+				for s in st['stocks']:
+					closes[s['code']][st['date']] = s['price']['close']
+			return closes
