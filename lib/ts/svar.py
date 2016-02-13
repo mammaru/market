@@ -69,6 +69,7 @@ class SparseVAR(VAR):
 
 
 	def GCV(self, interval):
+		print 'Execute Generalized Cross-Validation'
 		p = self.dim
 		N = self.N
 		#print N, p
@@ -86,7 +87,7 @@ class SparseVAR(VAR):
 				rss = (Z[:,j]-X*B[:,j]).T*(Z[:,j]-X*B[:,j])
 				b = B[:,j]
 				b[b==0] = SVAR0
-				print b.T
+				#print b.T
 				D = np.matrix(np.diag((lmd/np.abs(b.T)).tolist()[0]))
 				H = X*(X.T*X+D).I*X.T
 				d_free = np.sum(np.diag(H))

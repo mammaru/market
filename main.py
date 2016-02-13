@@ -5,99 +5,78 @@ import networkx as nx
 from matplotlib import pyplot as plt
 import sys,os
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/lib')
+try:
+	sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/lib')
+except:
+	sys.path.append(os.getcwd() + '/lib')
 from database import io
 from ts import kalman, svar
-#from svar import *
+from vis import *
 #from kalman import *
-
-def draw_heatmap(data, **labels):
-	fig, axis = plt.subplots(figsize=(10, 10))
-	heatmap = axis.pcolor(data, cmap=plt.cm.Reds)
-	axis.set_xticks(np.arange(data.shape[0])+0.5, minor=False)
-	axis.set_yticks(np.arange(data.shape[1])+0.5, minor=False)
-	axis.invert_yaxis()
-	axis.xaxis.tick_top()
-
-	if labels:
-		axis.set_xticklabels(labels["row"], minor=False)
-		axis.set_yticklabels(labels["column"], minor=False)
-
-	fig.show()
-	#plt.savefig('image.png')
-	
-	return heatmap
-
 
 
 if __name__ == "__main__":
-	if 1:
-		st = io.Stock()
-		price = st.get_close('2015-01-01',50)
-		#print price.describe()
+	if 0:
+		if 0:
+			st = io.Stock()
+			price_raw = st.get_close('2015-01-01',365)
+
+		price = price_raw
+		#print price_raw.describe()
 
 		if 1:
 			# na
-			#price.interpolate()
-			#price.fillna(method='ffill') # fill na with next value
-			price.dropna(axis=1) # delete all clumns that has na element
+			#price = price.interpolate()
+			price = price.fillna(method='ffill') # fill na with next value
+			#price = price.dropna(axis=1) # delete all clumns that has na element
 
-		if 1:
+		if 0:
 			# logalization
-			price.applymap(lambda x: np.log(x))
+			price = price.applymap(lambda x: np.log(x))
 
 		if 1:
 			# normalization
-			m = price.mean(1)
-			s = price.std(1)
-			price = price.sub(m,axis=0).div(s,axis=0)
-
+			#m = price.mean(1)
+			#s = price.std(1)
+			#price = price.sub(m,axis=0).div(s,axis=0)
+			price = price.apply(lambda x: (x - np.mean(x)) / (np.max(x) - np.min(x)))
+			
 		if 1:
 			#print price.columns.map(lambda x: x < 5000)
 			price = price.ix[:,price.columns.map(lambda x: x < 2000)]
 			#print data
-
-		#filename = "./ignr/data/qn_PC9_EGF.log2.Name.Uniq.NaN.Shift.v2.139genes.dat"
-		#data = np.loadtxt(filename, delimiter="\t")
-		#exprs = pd.read_table(filename, index_col="D...1.").T
-		#exprs = exprs.fillna(0)
-		#df.index = pd.to_datetime(df.index) # convert index into datetime
-		#hourly = df.resample("H", how="mean") # hourly
-		#daily = df.resample("D", how="mean") # daily
-		#price = daily.ix[:, daily.columns.map(lambda x: x.endswith("PRICE"))]
-		#volume = daily.ix[:, daily.columns.map(lambda x: x.endswith("VOLUME"))]
-
-		#filename = "./ignr/data/exchange.dat"
-		#data = np.loadtxt(filename, delimiter="\t")
-		#df = pd.read_table(filename, index_col="datetime")
-		#df.index = pd.to_datetime(df.index) # convert index into datetime
-		#hourly = df.resample("H", how="mean") # hourly
-		#daily = df.resample("D", how="mean") # daily
-		#price = daily.ix[:, daily.columns.map(lambda x: x.endswith("PRICE"))]
-		#volume = daily.ix[:, daily.columns.map(lambda x: x.endswith("VOLUME"))]
+		data = price
+	else:
+		data = price
+		
+	# plot data
+	if 1:
+		#print data.describe()
+		line = data[1003] 
+   		plt.plot(line)
+   		plt.show()
+		
 
 
 	# SVAR
-	if 1:
-		data = price
-		print data.describe()
+	if 0:
 		svar = svar.SparseVAR()
 		svar.set_data(data)
 		#svar.regression(5)
 
 		interval = np.arange(0,3,0.5)
 		B = svar.GCV(interval)
-		B = DataFrame(B.T, index=data.columns, columns=data.columns)
-	if 1:
-		draw_heatmap(np.array(B))
-	if 1:
+		B = pd.DataFrame(B.T, index=data.columns, columns=data.columns)
+	if 0:
+		viz.heatmap(np.array(B))
+	if 0:
 		DG = nx.DiGraph()
 		idxs = B.index.tolist()
 		#print idxs
 		for idx_from in idxs:
 			for idx_to in idxs:
-				print idx_from, idx_to
-				print B.loc[idx_from, idx_to]
+				#print idx_from, idx_to
+				#print B.loc[idx_from, idx_to]
 				if B.ix[idx_from,idx_to]!=0:
 					#print B.ix[idx_from,idx_to]
 					DG.add_edge(idx_from, idx_to, weight=B.ix[idx_from,idx_to])
@@ -113,7 +92,6 @@ if __name__ == "__main__":
 
 	# kalman and EM
 	if 0:
-		data = price
 		sys_k = 5
 		em = kalman.EM(data, sys_k)
 		em.execute()
