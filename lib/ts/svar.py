@@ -71,6 +71,7 @@ class SparseVAR(VAR):
 	def GCV(self, interval):
 		p = self.dim
 		N = self.N
+		#print N, p
 		Z = np.matrix(self.data.ix[1:,])
 		X = np.matrix(self.data.ix[:(N-1),])
 
@@ -85,6 +86,7 @@ class SparseVAR(VAR):
 				rss = (Z[:,j]-X*B[:,j]).T*(Z[:,j]-X*B[:,j])
 				b = B[:,j]
 				b[b==0] = SVAR0
+				print b.T
 				D = np.matrix(np.diag((lmd/np.abs(b.T)).tolist()[0]))
 				H = X*(X.T*X+D).I*X.T
 				d_free = np.sum(np.diag(H))

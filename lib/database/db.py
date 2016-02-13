@@ -64,7 +64,7 @@ class DataBase:
 			date_id = self.cursor.fetchall()[0][0]
 			self.__disconnect_database()
 			self.__connect_database(db_path[0])
-			sql = 'select code, open, high, low, close from prices where dating_id='+str(date_id)+''
+			sql = 'select code, open, high, low, close from prices where dating_id='+str(date_id)
 			#print 'Execute SQL:', '\''+sql+'\''
 			self.cursor.execute(sql)
 			sts = []

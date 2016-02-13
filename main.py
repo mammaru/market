@@ -33,7 +33,7 @@ def draw_heatmap(data, **labels):
 if __name__ == "__main__":
 	if 1:
 		st = io.Stock()
-		price = st.get_close('2015-01-01',30)
+		price = st.get_close('2015-01-01',50)
 		#print price.describe()
 
 		if 1:
@@ -54,7 +54,7 @@ if __name__ == "__main__":
 
 		if 1:
 			#print price.columns.map(lambda x: x < 5000)
-			price = price.ix[:,price.columns.map(lambda x: x < 3000)]
+			price = price.ix[:,price.columns.map(lambda x: x < 2000)]
 			#print data
 
 		#filename = "./ignr/data/qn_PC9_EGF.log2.Name.Uniq.NaN.Shift.v2.139genes.dat"
@@ -90,7 +90,7 @@ if __name__ == "__main__":
 		B = DataFrame(B.T, index=data.columns, columns=data.columns)
 	if 1:
 		draw_heatmap(np.array(B))
-	if 0:
+	if 1:
 		DG = nx.DiGraph()
 		idxs = B.index.tolist()
 		#print idxs
@@ -113,8 +113,9 @@ if __name__ == "__main__":
 
 	# kalman and EM
 	if 0:
+		data = price
 		sys_k = 5
-		em = kalman.EM(price, sys_k)
+		em = kalman.EM(data, sys_k)
 		em.execute()
 
 	if 0:
