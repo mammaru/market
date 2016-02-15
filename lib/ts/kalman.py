@@ -2,7 +2,8 @@ import numpy as np
 #import pandas as pd
 from pandas import DataFrame, Series
 from matplotlib import pyplot as plt
-from timeseries import StateSpaceModel as SSM
+
+from model import StateSpaceModel as SSM
 
 
 class Kalman(SSM):

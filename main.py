@@ -16,6 +16,7 @@ from vis import *
 
 
 if __name__ == "__main__":
+	#reload(ts)
 	if 0:
 		if 0:
 			st = io.Stock()
@@ -52,11 +53,10 @@ if __name__ == "__main__":
 	# plot data
 	if 1:
 		#print data.describe()
-		line = data[1003] 
+		line = data[1001]
    		plt.plot(line)
    		plt.show()
 		
-
 
 	# SVAR
 	if 0:
@@ -64,7 +64,7 @@ if __name__ == "__main__":
 		svar.set_data(data)
 		#svar.regression(5)
 
-		interval = np.arange(0,3,0.5)
+		interval = np.arange(2,3,0.5)
 		B = svar.GCV(interval)
 		B = pd.DataFrame(B.T, index=data.columns, columns=data.columns)
 	if 0:

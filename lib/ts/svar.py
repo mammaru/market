@@ -4,7 +4,7 @@ from numpy.random import *
 #import pandas as pd
 from pandas import DataFrame, Series
 from matplotlib import pyplot as plt
-from timeseries import VectorAutoRegressiveModel as VAR
+from model import VectorAutoRegressiveModel as VAR
 
 SVARthr = 1e-5
 SVAR0 = 1e-20
@@ -30,7 +30,7 @@ class SparseVAR(VAR):
 			lmd = 0
 		Z = np.matrix(self.data.ix[1:,])
 		X = np.matrix(self.data.ix[:(N-1),])
-		#print X.shape, Z.shape
+		print X.shape, Z.shape
 		Bold = (X.T*X+np.matrix(np.diag([lmd for i in range(p)]))).I*X.T*Z
 		Bnew = np.matrix(np.eye(p, 0))
 		if lmd:
