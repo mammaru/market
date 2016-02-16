@@ -4,7 +4,8 @@
 *.pyc
 
 # directries
+.bundle/
 log/
 txt/
-c/
-.bundle/
+Eigen/
+pf/
