@@ -7,8 +7,10 @@
  *
  **********************************************************************************************/
 #include <iostream>
+#include <vector> 
 #include "Eigen/Core"
 #include "Eigen/Geometry"
+#define PRINT_MAT(X) cout << #X << ":\n" << X << endl << endl
 
 using namespace Eigen;
 
@@ -51,67 +53,67 @@ void Kalman::predict(Matrix<double, Dynamic, Dynamic> &m) {
 void Kalman::execute(int k) {
   std::cout << "in execute of class Kalman" << std::endl;
 
-  int N = (*obs).cols();
-  int p = (*obs).rows();
+  int N = obs->cols();
+  int p = obs->rows();
   Matrix<double, Dynamic, 1> x0mean = param.x0mean;
   Matrix<double, Dynamic, Dynamic> x0var = param.x0var;		
   Matrix<double, Dynamic, Dynamic> F = param.F;
   Matrix<double, Dynamic, Dynamic> H = param.H;
   Matrix<double, Dynamic, Dynamic> Q = param.Q;
   Matrix<double, Dynamic, Dynamic> R = param.R;
-  Matrix<double, Dynamic, Dynamic> **xp; //= np.matrix(np.empty([k, 0])).T #np.matrix(self.xp.T)
-  Matrix<double, Dynamic, Dynamic> **xf; //= np.matrix(self.xf.T)
-  Matrix<double, Dynamic, Dynamic> **xs; //= np.matrix(np.empty([k, 0])).T #np.matrix(self.xs.T)
-  Matrix<double, Dynamic, Dynamic> **vp; //= self.vp
-  Matrix<double, Dynamic, Dynamic> **vf;//= self.vf
-  Matrix<double, Dynamic, Dynamic> **vs; //= self.vs
-  Matrix<double, Dynamic, Dynamic> **vLag; //= self.vLag
+  Matrix<double, Dynamic, Dynamic> *xp = new MatrixXd[N];
+  Matrix<double, Dynamic, Dynamic> *xf = new MatrixXd[N];
+  Matrix<double, Dynamic, Dynamic> *xs = new MatrixXd[N];
+  Matrix<double, Dynamic, Dynamic> *vp = new MatrixXd[N];
+  Matrix<double, Dynamic, Dynamic> *vf = new MatrixXd[N];
+  Matrix<double, Dynamic, Dynamic> *vs = new MatrixXd[N];
+  Matrix<double, Dynamic, Dynamic> *vLag = new MatrixXd[N];
 
-  //x0 = np.matrix(np.random.multivariate_normal(x0mean.T.tolist()[0], np.asarray(x0var))).T;
-  //xp = np.matrix(self.ssm.sys_eq(x0,F,Q));
-  xp = F*x0mean;
-  vp.append(F*x0var*F.T+Q);
+  xp[0] = F*x0mean;
+  vp[0] = F*x0var*F.transpose()+Q;
 
+  Matrix<double, Dynamic, Dynamic> K;
+  Matrix<double, Dynamic, Dynamic> *J = new MatrixXd[N];
   for(int i=0; i<N; i++) {
 	//filtering
-	K = vp[i]*H.T*(H*vp[i]*H.T+R).I;
-	xf = xp[:,i]+K*(Yobs[:,i]-H*xp[:,i]) if i == 0 else np.hstack([xf, xp[:,i]+K*(Yobs[:,i]-H*xp[:,i])]);
-	vf.append(vp[i]-K*H*vp[i]);
+	K = vp[i]*H.transpose()*(H*vp[i]*H.transpose()+R).inverse();
+	xf[i] = xp[i]+K*(obs->col(i)-H*xp[i]);
+	vf[i] = vp[i]-K*H*vp[i];
 	//prediction
-	xp = np.hstack([xp, F*xf[:,i]]);
-	vp.append(F*vf[i]*F.T+Q);
+	xp[i] = F*xf[i];
+	vp[i] = F*vf[i]*F.transpose()+Q;
   }
   // smoothing
-  J = [np.matrix(np.zeros([k,k]))];
-  xs = xf[:,N-1];
-  vs.insert(0, vf[N-1]);
-  vLag.insert(0, F*vf[N-2]-K*H*vf[N-2]);
+  //J = MatrixXd::Zero(k,k);
+  xs[N-1] = xf[N-1];
+  vs[N-1] = vf[N-1];
+  vLag[N-1] = F*vf[N-2]-K*H*vf[N-2];
   
-  for(int i=N;i>0;i--) {
-	J.insert(0, vf[i-1]*F.T*vp[i].I);
-	xs = np.hstack([xf[:,i-1]+J[0]*(xs[:,0]-xp[:,i]),xs]);
-	vs.insert(0, vf[i-2]+J[0]*(vs[0]-vp[i])*J[0].T);
+  for(int i=N-1;i>0;i--) {
+	J[i-1] = vf[i-1]*F.transpose()*vp[i].inverse();
+	xs[i-1] = xf[i-1]+J[i-1]*(xs[i]-xp[i]);
+	vs[i-1] = vf[i-2]+J[i-1]*(vs[i]-vp[i])*J[i-1].transpose();
   }
 		
-  for(int i=N;i>1;i--) {
-	vLag.insert(0, vf[i-1]*J[i-1].T+J[i-1]*(vLag[0]-F*vf[i-1])*J[i-2].T);
+  for(int i=N-1;i>1;i--) {
+	vLag[i-1] = vf[i-1]*J[i-1].transpose()+J[i-1]*(vLag[i]-F*vf[i-1])*J[i-2].transpose();
   }
 		
-  J0 = x0var*F.T*vp[0].I;
-  vLag[0] = vf[0]*J0.T+J[0]*(vLag[0]-F*vf[0])*J0.T;
-  xs0 = x0mean+J0*(xs[:,0]-xp[:,0]);
-  vs0 = x0var+J0*(vs[0]-vp[0])*J0.T;
+  J[0] = x0var*F.transpose()*vp[0].inverse();
+  vLag[0] = vf[0]*J[0].transpose()+J[1]*(vLag[1]-F*vf[0])*J[0].transpose();
+  xs[0] = x0mean+J[0]*(xs[1]-xp[0]);
+  vs[0] = x0var+J[0]*(vs[1]-vp[0])*J[0].transpose();
 		
-  self.xs0 = DataFrame(xs0.T);
-  self.xp = DataFrame(xp.T);
-  self.vp = vp;
-  self.xf = DataFrame(xf.T);
-  self.vf = vf;
-  self.xs0 = DataFrame(xs0.T);
-  self.xs = DataFrame(xs.T);
-  self.vs0 = vs0;
-  self.vs = vs;
-  self.vLag = vLag;
+  //self.xs0 = DataFrame(xs0.T);
+  //self.xp = DataFrame(xp.T);
+  //self.vp = vp;
+  //self.xf = DataFrame(xf.T);
+  //self.vf = vf;
+  //self.xs0 = DataFrame(xs0.T);
+  //self.xs = DataFrame(xs.T);
+  //self.vs0 = vs0;
+  //self.vs = vs;
+  //self.vLag = vLag;
   
 };
 
@@ -130,7 +132,7 @@ int main() {
   MatrixXd B = Map<Matrix<double, Dynamic, Dynamic> >(&(b[0][0]), rows, cols);
   std::cout << "B\n" << B << std::endl;
 
-  (*k).predict(B);
+  k->predict(B);
   delete k;
   k = NULL;
 
