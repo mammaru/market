@@ -91,8 +91,10 @@ class Kalman(SSM):
 
 		#x0 = np.matrix(np.random.multivariate_normal(x0mean.T.tolist()[0], np.asarray(x0var))).T
 		#xp = np.matrix(self.ssm.sys_eq(x0,F,Q))
-		xp = np.matrix(F*x0mean)
-		vp.append(F*x0var*F.T+Q)
+		#xp = np.matrix(F*x0mean)
+		xp = np.matrix(x0mean)
+		#vp.append(F*x0var*F.T+Q)
+		vp.append(x0var)
 
 		if 0: # unequal intervals
 			interval = tp[2]-tp[1]
@@ -140,15 +142,15 @@ class Kalman(SSM):
 		J = [np.matrix(np.zeros([k,k]))]
 		xs = xf[:,N-1]
 		vs.insert(0, vf[N-1])
-		vLag.insert(0, F*vf[N-2]-K*H*vf[N-2])
+		vLag.insert(0, F*vf[N-2]-K*H*F*vf[N-2])
 		
 		for i in reversed(range(N)[1:]):
 			J.insert(0, vf[i-1]*F.T*vp[i].I)
 			xs = np.hstack([xf[:,i-1]+J[0]*(xs[:,0]-xp[:,i]),xs])
-			vs.insert(0, vf[i-2]+J[0]*(vs[0]-vp[i])*J[0].T)
+			vs.insert(0, vf[i-1]+J[0]*(vs[0]-vp[i])*J[0].T)
 		
 		for i in reversed(range(N)[2:]):
-			vLag.insert(0, vf[i-1]*J[i-1].T+J[i-1]*(vLag[0]-F*vf[i-1])*J[i-2].T)
+			vLag.insert(0, vf[i-1]*J[i-2].T+J[i-1]*(vLag[0]-F*vf[i-1])*J[i-2].T)
 		
 		J0 = x0var*F.T*vp[0].I
 		vLag[0] = vf[0]*J0.T+J[0]*(vLag[0]-F*vf[0])*J0.T
