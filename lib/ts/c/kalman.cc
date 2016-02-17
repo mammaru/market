@@ -13,6 +13,7 @@
 
 using namespace Eigen;
 #define PRINT_MAT(X) std::cout << #X << ":\n" << X << std::endl << std::endl
+#define PI 3.1415926535
 
 typedef struct {
   Matrix<double, Dynamic, Dynamic> F;
@@ -47,6 +48,7 @@ public:
   void predict(Matrix<double, Dynamic, Dynamic> &m);
   void execute(int k);
   results* get();
+  void em(int k);
 
 private:
   Matrix<double, Dynamic, Dynamic> *obs;
@@ -119,9 +121,84 @@ void Kalman::execute(int k) {
 	vl[i-1] = vf[i-1]*J[i-2].transpose()+J[i-1]*(vl[i]-F*vf[i-1])*J[i-2].transpose();
   }
 
+  // store results
+  //r.x0mean = x0;
+  //r.x0var = v0;
   r.xp = xp;
-  
+  r.xf = xf;
+  r.xs = xs;
+  r.vp = vp;
+  r.vf = vf;
+  r.vs = vs;
+  r.vl = vl;                    
 };
+
+void Kalman::em(int k) {
+  int N = obs->cols();
+  int p = obs->rows();
+  Matrix<double, Dynamic, 1> x0;
+  Matrix<double, Dynamic, Dynamic> v0;
+  Matrix<double, Dynamic, Dynamic> F;
+  Matrix<double, Dynamic, Dynamic> Q;
+  Matrix<double, Dynamic, Dynamic> H;
+  Matrix<double, Dynamic, Dynamic> R;
+  Matrix<double, Dynamic, Dynamic> S11;
+  Matrix<double, Dynamic, Dynamic> S10;
+  Matrix<double, Dynamic, Dynamic> S00;
+  Matrix<double, Dynamic, Dynamic> Syy;
+  Matrix<double, Dynamic, Dynamic> Syx;
+
+  double *llh = new double[N];  
+
+  int count = 0;
+  double diff = 100;
+  while(diff>1e-3 and count<5000) {
+
+    // E step
+    execute(k); //kalman smoother
+
+    S11 = r.xs[0]*r.xs[0].transpose() + r.vs[0];
+    S10 = r.xs[0]*r.xs[0].transpose() + r.vl[0];
+    S00 = r.xs[0]*r.xs[0].transpose() + param.x0var;
+    Syy = obs->col(0)*obs->col(0).transpose();
+    Syx = obs->col(0)*r.xs[0].transpose();
+    for(int i=1; i<N; i++) {
+      S11 = S11 + r.xs[i-1]*r.xs[i-1].transpose() + r.vs[i-1];
+      S10 = S10 + r.xs[i-1]*r.xs[i-2].transpose() + r.vl[i-1];
+      S00 = S00 + r.xs[i-2]*r.xs[i-2].transpose() + r.vs[i-2];
+      Syy = Syy + obs->col(i-1)*obs->col(i-1).transpose();
+      Syx = Syx + obs->col(i-1)*r.xs[i-1].transpose();
+    }
+    
+    double logllh = log((param.x0var).determinant()) + (param.x0var.inverse()*(r.vs[0]+(r.xs[0]-param.x0mean)*(r.xs[0]-param.x0mean).transpose())).trace() + N*log(param.R.determinant()) + (param.R.inverse()*(Syy+param.H*S11*param.H.transpose()-Syx*param.H.transpose()-param.H*Syx.transpose())).trace() + N*log(param.Q.determinant()) + (param.Q.inverse()*(S11+param.F*S00*param.F.transpose()-S10*param.F.transpose()-param.F*S10.transpose())).trace() + (k+N*(k+p))*log(2*PI);
+
+    logllh = (-1/2)*logllh;
+    llh[count] = logllh;
+    
+    // M step (update parameters that maximize log likelihood)
+    param.F = S10*S00.inverse();
+    param.H = Syx*S11.inverse();
+    param.Q = (S11 - S10*S00.inverse()*S10.transpose())/N;
+    param.R = (((Syy - Syx*S11.inverse()*Syx.transpose()).diagonal()).array()/N).matrix();
+    param.x0mean = r.xs[0].transpose();
+    param.x0var = r.vs[0];
+       
+    if(count>0) {
+      diff = std::abs(llh[count] - llh[count-1]);
+    }
+    count += 1;
+  }    
+
+}
+
+
+
+
+
+
+
+
+
 
 int main() {
 
