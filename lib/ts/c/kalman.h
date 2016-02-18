@@ -28,23 +28,18 @@ namespace TS {
 
 
   class Kalman {
-  public:
-    inline Kalman() {
-      //std::cout << "in constructor of class Kalman" << std::endl;
-    };
-    inline ~Kalman() {
-      //std::cout << "in destructor of class Kalman" << std::endl;
-    };
-    void set_data(Matrix<double, Dynamic, Dynamic> *data);
-    void set_params(params p);
-    Matrix<double, Dynamic, Dynamic> predict();
-    void execute(int k);
-    results* get();
-    void em(int k);
-
-  private:
-    Matrix<double, Dynamic, Dynamic> *obs;
-    params param;
-    results r; 
+    public:
+      inline Kalman() {};
+      inline ~Kalman() {};
+      void set_data(Matrix<double, Dynamic, Dynamic> *data);
+      void set_params(params p);
+      Matrix<double, Dynamic, Dynamic> predict();
+      void execute(int k);
+      results* get();
+      void em(int k);
+    private:
+      Matrix<double, Dynamic, Dynamic> *obs;
+      params param;
+      results r; 
   };
 };

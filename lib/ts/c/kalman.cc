@@ -1,7 +1,7 @@
 /***********************************************************************************************
  * Kalman
- *  prediction, filtering, smoothing using current parameters
- *  parameter estimation by EM using observation
+ *  - prediction, filtering, smoothing using current parameters
+ *  - parameter estimation by EM method using observation data
  *
  *
  *
@@ -24,7 +24,6 @@ results* Kalman::get() {
 };
 
 Matrix<double, Dynamic, Dynamic> Kalman::predict() {
-  //std::cout << "in execute of class Kalman" << std::endl;
   int N = obs->cols();
   int p = obs->rows();
   Matrix<double, Dynamic, Dynamic> yhat;
@@ -39,7 +38,7 @@ void Kalman::execute(int k) {
   //std::cout << "in execute of class Kalman" << std::endl;
 
   int N = obs->cols();
-  int p = obs->rows();
+  //int p = obs->rows();
   //Matrix<double, Dynamic, 1> x0 = param.x0mean;
   //Matrix<double, Dynamic, Dynamic> v0 = param.x0var;		
   //Matrix<double, Dynamic, Dynamic> F = param.F;
@@ -116,30 +115,23 @@ void Kalman::em(int k) {
 
   int count = 0;
   double diff = 100;
-  //PRINT_MAT(diff);
   while(diff>1e-3 && count<1000) {
     count++;
 
     // E step
     execute(k); // kalman smoother
 
-    S11 = MatrixXd::Zero(k,k);//r.xs[0]*r.xs[0].transpose() + r.vs[0];
-    S10 = MatrixXd::Zero(k,k);//r.xs[0]*r.xs[0].transpose() + r.vl[0];
-    S00 = MatrixXd::Zero(k,k);//r.xs[0]*r.xs[0].transpose() + param.x0var;
-    Syy = MatrixXd::Zero(p,p);//obs->col(0)*obs->col(0).transpose();
-    Syx = MatrixXd::Zero(p,k);//obs->col(0)*r.xs[0].transpose();
-    //PRINT_MAT(S11);
+    S11 = MatrixXd::Zero(k,k);
+    S10 = MatrixXd::Zero(k,k);
+    S00 = MatrixXd::Zero(k,k);
+    Syy = MatrixXd::Zero(p,p);
+    Syx = MatrixXd::Zero(p,k);
     for(int i=1; i<N; i++) {
       S11 += r.xs[i]*r.xs[i].transpose() + r.vs[i];
-      //PRINT_MAT(S11);
       S10 += r.xs[i]*r.xs[i-1].transpose() + r.vl[i];
-      //PRINT_MAT(S10);
       S00 += r.xs[i-1]*r.xs[i-1].transpose() + r.vs[i-1];
-      //PRINT_MAT(S11);
       Syy += obs->col(i)*obs->col(i).transpose();
-      //PRINT_MAT(Syy);
       Syx += obs->col(i)*r.xs[i].transpose();
-      //PRINT_MAT(Syx);
     }
 
     //PRINT_MAT(log((param.x0var).determinant()));
@@ -152,26 +144,18 @@ void Kalman::em(int k) {
     double logllh = log((param.x0var).determinant()) + (param.x0var.inverse()*(r.vs[0]+(r.xs[0]-param.x0mean)*(r.xs[0]-param.x0mean).transpose())).trace() + N*log(param.R.determinant()) + (param.R.inverse()*(Syy+param.H*S11*param.H.transpose()-Syx*param.H.transpose()-param.H*Syx.transpose())).trace() + N*log(param.Q.determinant()) + (param.Q.inverse()*(S11+param.F*S00*param.F.transpose()-S10*param.F.transpose()-param.F*S10.transpose())).trace() + (k+N*(k+p))*log(2*PI);
 
     logllh = -logllh/2.0;
-    //PRINT_MAT(logllh);
     llh[count] = logllh;
     
     // M step (update parameters that maximize log likelihood)
     param.F = S10*S00.inverse();
-    //PRINT_MAT(param.F);
     param.H = Syx*S11.inverse();
-    //PRINT_MAT(param.H);
     param.Q = (S11 - S10*S00.inverse()*S10.transpose())/N;
-    //PRINT_MAT(param.Q);
     param.R = (((Syy - Syx*S11.inverse()*Syx.transpose()).diagonal())/N).asDiagonal();
-    //PRINT_MAT(param.R);
     param.x0mean = r.xs[0];
-    //PRINT_MAT(param.x0mean);
     param.x0var = r.vs[0];
-    //PRINT_MAT(param.x0var);
 
     if(count>0) {
       diff = std::abs(llh[count] - llh[count-1]);
-      //PRINT_MAT(diff);
     }
     std::cout << count << ": " << logllh << std::endl;
   }
