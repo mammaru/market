@@ -1,5 +1,7 @@
 #include "kalman.cc"
 
+using namespace TS;
+
 int main() {
 
   Kalman *kal = new Kalman;

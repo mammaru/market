@@ -3,6 +3,7 @@
 *.sqlite3
 *.pyc
 *.out
+main
 
 # directries
 .bundle/
@@ -10,3 +11,4 @@ log/
 txt/
 Eigen/
 pf/
+*.dSYM

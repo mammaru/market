@@ -9,6 +9,8 @@
 #include <iostream>
 #include "kalman.h"
 
+using namespace TS;
+
 void Kalman::set_data(Matrix<double, Dynamic, Dynamic> *data) {
   obs = data;
 };

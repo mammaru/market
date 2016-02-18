@@ -2,8 +2,8 @@ CC=g++
 CFLAGS=-g -Wall
 all: kalman
 
-kalman: kalman.cc
-	$(CC) $(CFLAGS) -o Kalman kalman.cc
+kalman: main.cc
+	$(CC) $(CFLAGS) -o main main.cc
 
 clean: 
-	rm Kalman
+	rm main
