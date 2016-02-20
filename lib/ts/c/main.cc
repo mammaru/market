@@ -1,5 +1,6 @@
-#include "kalman.cc"
+#include "kalman.h"
 
+using namespace Eigen;
 using namespace TS;
 
 int main() {

@@ -6,11 +6,11 @@
  *
  *
  **********************************************************************************************/
-#include <iostream>
 #include "kalman.h"
 
 using namespace TS;
-
+using namespace Eigen;
+  
 void Kalman::set_data(Matrix<double, Dynamic, Dynamic> *data) {
   obs = data;
 };
@@ -160,4 +160,5 @@ void Kalman::em(int k) {
     std::cout << count << ": " << logllh << std::endl;
   }
 
-}
+};
+
