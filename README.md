@@ -1,4 +1,4 @@
 # TODO
-  * analyse market data
-  * natural languaage proccessing of articles 
-  * reccomend hopeful stock or others
+  * analyze market data
+  * natural language processing of articles
+  * recommend hopeful stock or others

@@ -41,7 +41,7 @@ if __name__ == "__main__":
 			#s = price.std(1)
 			#price = price.sub(m,axis=0).div(s,axis=0)
 			price = price.apply(lambda x: (x - np.mean(x)) / (np.max(x) - np.min(x)))
-			
+
 		if 1:
 			#print price.columns.map(lambda x: x < 5000)
 			price = price.ix[:,price.columns.map(lambda x: x < 2000)]
@@ -49,14 +49,14 @@ if __name__ == "__main__":
 		data = price
 	else:
 		data = price
-		
+
 	# plot data
 	if 1:
 		#print data.describe()
 		line = data[1001]
    		plt.plot(line)
    		plt.show()
-		
+
 
 	# SVAR
 	if 0:
@@ -88,7 +88,7 @@ if __name__ == "__main__":
 		plt.yticks([])
 		plt.show()
 
-		
+
 
 	# kalman and EM
 	if 0:
@@ -115,7 +115,7 @@ if __name__ == "__main__":
 				if j%3 == 2: break
 
 		fig.show()
-		
+
 	   	#loss = data[0]-em.kl.xs
    		#plt.plot(loss)
 	   	#plt.plot(em.llh)
