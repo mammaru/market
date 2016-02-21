@@ -11,9 +11,9 @@ namespace TS {
     Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> H;
     Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> Q;
     Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> R;
-    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> x0mean;
+    Eigen::Matrix<double, Eigen::Dynamic, 1> x0mean;
     Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> x0var;
-  } params;
+  } parameters;
 
   typedef struct {
     Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> *xp;
@@ -27,18 +27,24 @@ namespace TS {
 
   class Kalman {
     public:
-      inline Kalman() {};
+      // variables
+      results sys;
+
+      // methods
+      Kalman(int obs_d, int sys_d);
       inline ~Kalman() {};
       void set_data(Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> *data);
-      void set_params(params p);
+      //void set_params(parameters p);
       Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> predict();
-      void execute(int k);
-      results* get();
-      void em(int k);
+      void execute();
+      //results* get_results();
+      void em();
+
     private:
-      
+      // variables
+      int sys_dim;
+      int obs_dim;
       Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> *obs;
-      params param;
-      results r; 
+      parameters params;
   };
 };
