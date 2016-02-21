@@ -28,6 +28,7 @@ namespace TS {
   class Kalman {
     public:
       // variables
+      Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> *obs;
       results sys;
 
       // methods
@@ -44,7 +45,6 @@ namespace TS {
       // variables
       int sys_dim;
       int obs_dim;
-      Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> *obs;
       parameters params;
   };
 };
