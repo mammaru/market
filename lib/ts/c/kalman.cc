@@ -36,21 +36,22 @@ void Kalman::set_params(parameters p){
 
 void Kalman::set_data(double* data, int n, int obs_d, int sys_d) {
   set_params(n, obs_d, sys_d);
-  MatrixXd d = Map<MatrixXd>(data, obs_d, n);
-  if(obs_dim!=d.rows()){
+  Matrix<double, Dynamic, Dynamic> *d = NULL;
+  *d = Map<Matrix<double, Dynamic, Dynamic> >(data, obs_d, n);
+  if(obs_d!=d->rows()) {
       std::cerr << "dimention of given data is not correct." << std::endl;
-  } else {
-    obs = &d;
-    std::cout << obs->cols() << "," << obs->rows() << std::endl;
-    PRINT_MAT(obs->col(N-2));
+  }else {
+    obs = d;
+    //std::cout << obs->rows() << ", " << obs->cols() << std::endl;
+    //PRINT_MAT(obs->col(0));
   }
 };
 
 Matrix<double, Dynamic, Dynamic> Kalman::predict() {
-  int N = obs->cols();
-  int p = obs->rows();
+  //int N = obs->cols();
+  //int p = obs->rows();
   Matrix<double, Dynamic, Dynamic> yhat;
-  yhat = MatrixXd::Zero(p,N);
+  yhat = MatrixXd::Zero(obs_dim, N);
   for(int i=0; i<N; i++) {
     yhat.col(i) = params.H*sys.xs[i];
   }
@@ -58,8 +59,8 @@ Matrix<double, Dynamic, Dynamic> Kalman::predict() {
 };
 
 void Kalman::execute() {
-  std::cout << N << std::endl;
-  PRINT_MAT(obs->col(N-2));
+  //std::cout << N << std::endl;
+  PRINT_MAT(obs->col(0));
   //std::cout << "in execute of class Kalman" << std::endl;
   //int N = obs->cols();
   //int p = obs->rows();
@@ -85,7 +86,7 @@ void Kalman::execute() {
   Matrix<double, Dynamic, Dynamic> *J = new MatrixXd[N];
   for(int i=0; i<N; i++) {
     //filtering
-    //PRINT_MAT(obs->col(i));
+    PRINT_MAT(obs->col(i));
     K = vp[i]*params.H.transpose()*(params.H*vp[i]*params.H.transpose()+params.R).inverse(); // kalman gain
 	  xf[i] = xp[i]+K*(obs->col(i)-params.H*xp[i]);
 	  vf[i] = vp[i]-K*params.H*vp[i];
@@ -121,7 +122,7 @@ void Kalman::execute() {
 };
 
 void Kalman::em() {
-  int N = obs->cols();
+  //int N = obs->cols();
   int p = obs_dim;
   int k = sys_dim;
   //Matrix<double, Dynamic, 1> x0;

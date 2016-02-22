@@ -5,6 +5,7 @@
 *.pyc
 *.out
 main
+#*.o
 
 # directries
 .bundle/

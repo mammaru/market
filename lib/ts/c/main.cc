@@ -4,11 +4,9 @@
 using namespace Eigen;
 using namespace TS;
 
-
-
 int main() {
 
-  std::cout << randn(0, 0.1) << std::endl;
+  //std::cout << randn(0, 0.1) << std::endl;
 
   int NN = 10; // number of time points
   int pp = 5; // observation dimention

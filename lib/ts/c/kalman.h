@@ -33,15 +33,14 @@ namespace TS {
       results sys;
 
       // methods
-      inline Kalman() {};
-      inline ~Kalman() {};
+      Kalman() {};
+      ~Kalman() {};
       void set_params(int, int, int);
       void set_params(parameters);
       //void set_data(Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> *data);
       void set_data(double*, int, int, int);
       Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> predict();
       void execute();
-      //results* get_results();
       void em();
 
     private:
