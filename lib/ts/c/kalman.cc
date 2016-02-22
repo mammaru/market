@@ -11,9 +11,10 @@
 using namespace TS;
 using namespace Eigen;
 
-Kalman::Kalman(int obs_d, int sys_d){
+void Kalman::set_params(int n, int obs_d, int sys_d){
   obs_dim = obs_d;
   sys_dim = sys_d;
+  N = n;
   params.F = MatrixXd::Random(sys_d,sys_d);
   params.H = MatrixXd::Random(obs_d,sys_d);
   params.Q = MatrixXd::Identity(sys_d,sys_d);
@@ -22,21 +23,28 @@ Kalman::Kalman(int obs_d, int sys_d){
   params.x0var = MatrixXd::Identity(sys_d,sys_d);
 };
 
-void Kalman::set_data(Matrix<double, Dynamic, Dynamic> *data) {
-  if(obs_dim!=data->rows()){
-      std::cerr << "dimention of given data is not correct." << std::endl;
-  }else {
-    obs = data;
-  }
+void Kalman::set_params(parameters p){
+  params.F = p.F;
+  params.H = p.H;
+  params.Q = p.Q;
+  params.R = p.R;
+  params.x0mean = p.x0mean;
+  params.x0var = p.x0var;
+  obs_dim = p.H.rows();
+  sys_dim = p.H.cols();
 };
 
-//void Kalman::set_params(parameters p) {
-  //params = p;
-//};
-
-//results* Kalman::get_results() {
-  //return(&r);
-//};
+void Kalman::set_data(double* data, int n, int obs_d, int sys_d) {
+  set_params(n, obs_d, sys_d);
+  MatrixXd d = Map<MatrixXd>(data, obs_d, n);
+  if(obs_dim!=d.rows()){
+      std::cerr << "dimention of given data is not correct." << std::endl;
+  } else {
+    obs = &d;
+    std::cout << obs->cols() << "," << obs->rows() << std::endl;
+    PRINT_MAT(obs->col(N-2));
+  }
+};
 
 Matrix<double, Dynamic, Dynamic> Kalman::predict() {
   int N = obs->cols();
@@ -50,9 +58,10 @@ Matrix<double, Dynamic, Dynamic> Kalman::predict() {
 };
 
 void Kalman::execute() {
+  std::cout << N << std::endl;
+  PRINT_MAT(obs->col(N-2));
   //std::cout << "in execute of class Kalman" << std::endl;
-
-  int N = obs->cols();
+  //int N = obs->cols();
   //int p = obs->rows();
   //Matrix<double, Dynamic, 1> x0 = params.x0mean;
   //Matrix<double, Dynamic, Dynamic> v0 = params.x0var;
@@ -75,28 +84,29 @@ void Kalman::execute() {
   Matrix<double, Dynamic, Dynamic> K;
   Matrix<double, Dynamic, Dynamic> *J = new MatrixXd[N];
   for(int i=0; i<N; i++) {
-	//filtering
-	K = vp[i]*params.H.transpose()*(params.H*vp[i]*params.H.transpose()+params.R).inverse(); // kalman gain
-	xf[i] = xp[i]+K*(obs->col(i)-params.H*xp[i]);
-	vf[i] = vp[i]-K*params.H*vp[i];
-	//prediction
-	xp[i+1] = params.F*xf[i];
-	vp[i+1] = params.F*vf[i]*params.F.transpose()+params.Q;
+    //filtering
+    //PRINT_MAT(obs->col(i));
+    K = vp[i]*params.H.transpose()*(params.H*vp[i]*params.H.transpose()+params.R).inverse(); // kalman gain
+	  xf[i] = xp[i]+K*(obs->col(i)-params.H*xp[i]);
+	  vf[i] = vp[i]-K*params.H*vp[i];
+	  //prediction
+	  xp[i+1] = params.F*xf[i];
+	  vp[i+1] = params.F*vf[i]*params.F.transpose()+params.Q;
   }
   // smoothing
   xs[N-1] = xf[N-1];
   vs[N-1] = vf[N-1];
   vl[N-1] = params.F*vf[N-2]-K*params.H*params.F*vf[N-2];
-  //PRINT_MAT(xs[N-1]);
+  PRINT_MAT(xs[N-1]);
 
   for(int i=N-1; i>0; i--) {
-	J[i-1] = vf[i-1]*params.F.transpose()*vp[i].inverse();
-	xs[i-1] = xf[i-1]+J[i-1]*(xs[i]-xp[i]);
-	vs[i-1] = vf[i-1]+J[i-1]*(vs[i]-vp[i])*J[i-1].transpose();
+	  J[i-1] = vf[i-1]*params.F.transpose()*vp[i].inverse();
+	  xs[i-1] = xf[i-1]+J[i-1]*(xs[i]-xp[i]);
+	  vs[i-1] = vf[i-1]+J[i-1]*(vs[i]-vp[i])*J[i-1].transpose();
   }
   //PRINT_MAT(J[0]);
   for(int i=N-1; i>1; i--) {
-	vl[i-1] = vf[i-1]*J[i-2].transpose()+J[i-1]*(vl[i]-params.F*vf[i-1])*J[i-2].transpose();
+	  vl[i-1] = vf[i-1]*J[i-2].transpose()+J[i-1]*(vl[i]-params.F*vf[i-1])*J[i-2].transpose();
   }
   //PRINT_MAT(vl[1]);
   // store results

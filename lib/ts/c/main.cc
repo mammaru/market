@@ -1,24 +1,35 @@
 #include "kalman.h"
+#include "mvrandom.h"
 
 using namespace Eigen;
 using namespace TS;
 
+
+
 int main() {
 
-  int NN = 50; // number of time points
-  int pp = 10; // observation dimention
-  int kk = 10; // system dimention
+  std::cout << randn(0, 0.1) << std::endl;
+
+  int NN = 10; // number of time points
+  int pp = 5; // observation dimention
+  int kk = 5; // system dimention
+
   // generate observation data
-  Matrix<double, Dynamic, Dynamic> data = MatrixXd::Random(pp,NN);
+  double data[pp][NN];
+  for(int i=0; i<pp; i++) {
+    for(int j=0; j<NN; j++) {
+      data[i][j] = randn(0, 0.1);
+    }
+  }
 
   // generate Kalman instance and set observation data
-  Kalman *kal = new Kalman(pp, kk);
-  kal->set_data(&data);
+  Kalman *kal = new Kalman();
+  kal->set_data(&(data[0][0]), NN, pp, kk);
 
   // execute kalman methods
-  //kal->execute(kk);
-  //results *r = kal->get();
-  //PRINT_MAT(r->xp[0]);
+  kal->execute();
+  results r = kal->sys;
+  PRINT_MAT(r.xp[0]);
 
   // EM algorithm that estimate parameters
   kal->em();
