@@ -29,7 +29,6 @@ namespace TS {
     public:
       // variables
       Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> *obs;
-      //double obs[][];
       results sys;
 
       // methods
@@ -37,7 +36,7 @@ namespace TS {
       ~Kalman() {};
       void set_params(int, int, int);
       void set_params(parameters);
-      //void set_data(Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> *data);
+      void set_data(Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> *data);
       void set_data(double*, int, int, int);
       Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> predict();
       void execute();
@@ -50,4 +49,4 @@ namespace TS {
       int N;
       parameters params;
   };
-};
+}

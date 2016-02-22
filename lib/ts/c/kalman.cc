@@ -11,7 +11,7 @@
 using namespace TS;
 using namespace Eigen;
 
-void Kalman::set_params(int n, int obs_d, int sys_d){
+void Kalman::set_params(int n, int obs_d, int sys_d) {
   obs_dim = obs_d;
   sys_dim = sys_d;
   N = n;
@@ -21,9 +21,9 @@ void Kalman::set_params(int n, int obs_d, int sys_d){
   params.R = MatrixXd::Identity(obs_d,obs_d);
   params.x0mean = MatrixXd::Random(sys_d,1);
   params.x0var = MatrixXd::Identity(sys_d,sys_d);
-};
+}
 
-void Kalman::set_params(parameters p){
+void Kalman::set_params(parameters p) {
   params.F = p.F;
   params.H = p.H;
   params.Q = p.Q;
@@ -32,20 +32,23 @@ void Kalman::set_params(parameters p){
   params.x0var = p.x0var;
   obs_dim = p.H.rows();
   sys_dim = p.H.cols();
-};
+}
+
+void Kalman::set_data(Matrix<double, Dynamic, Dynamic> *data) {
+  if(obs_dim!=data->rows()) {
+      std::cerr << "dimention of given data is not correct." << std::endl;
+  }else {
+    obs = data;
+    //PRINT_MAT(data->col(0));
+    //PRINT_MAT(obs->col(0));
+  }
+}
 
 void Kalman::set_data(double* data, int n, int obs_d, int sys_d) {
   set_params(n, obs_d, sys_d);
-  Matrix<double, Dynamic, Dynamic> *d = NULL;
-  *d = Map<Matrix<double, Dynamic, Dynamic> >(data, obs_d, n);
-  if(obs_d!=d->rows()) {
-      std::cerr << "dimention of given data is not correct." << std::endl;
-  }else {
-    obs = d;
-    //std::cout << obs->rows() << ", " << obs->cols() << std::endl;
-    //PRINT_MAT(obs->col(0));
-  }
-};
+  MatrixXd d = Map<Matrix<double, Dynamic, Dynamic> >(data, obs_d, n);
+  set_data(&d);
+}
 
 Matrix<double, Dynamic, Dynamic> Kalman::predict() {
   //int N = obs->cols();
@@ -56,11 +59,11 @@ Matrix<double, Dynamic, Dynamic> Kalman::predict() {
     yhat.col(i) = params.H*sys.xs[i];
   }
   return(yhat);
-};
+}
 
 void Kalman::execute() {
   //std::cout << N << std::endl;
-  PRINT_MAT(obs->col(0));
+  //PRINT_MAT(obs->col(0));
   //std::cout << "in execute of class Kalman" << std::endl;
   //int N = obs->cols();
   //int p = obs->rows();
@@ -86,7 +89,7 @@ void Kalman::execute() {
   Matrix<double, Dynamic, Dynamic> *J = new MatrixXd[N];
   for(int i=0; i<N; i++) {
     //filtering
-    PRINT_MAT(obs->col(i));
+    //PRINT_MAT(obs->col(i));
     K = vp[i]*params.H.transpose()*(params.H*vp[i]*params.H.transpose()+params.R).inverse(); // kalman gain
 	  xf[i] = xp[i]+K*(obs->col(i)-params.H*xp[i]);
 	  vf[i] = vp[i]-K*params.H*vp[i];
@@ -98,7 +101,7 @@ void Kalman::execute() {
   xs[N-1] = xf[N-1];
   vs[N-1] = vf[N-1];
   vl[N-1] = params.F*vf[N-2]-K*params.H*params.F*vf[N-2];
-  PRINT_MAT(xs[N-1]);
+  //PRINT_MAT(xs[N-1]);
 
   for(int i=N-1; i>0; i--) {
 	  J[i-1] = vf[i-1]*params.F.transpose()*vp[i].inverse();
@@ -119,7 +122,7 @@ void Kalman::execute() {
   sys.vs = vs;
   sys.vl = vl;
   //PRINT_MAT(sys.xp[0]);
-};
+}
 
 void Kalman::em() {
   //int N = obs->cols();
@@ -187,4 +190,4 @@ void Kalman::em() {
     std::cout << count << ": " << logllh << std::endl;
   }
 
-};
+}

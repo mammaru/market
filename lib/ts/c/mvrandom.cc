@@ -6,4 +6,4 @@ double randn (double mu, double sigma) {
   std::mt19937 gen(rd());
   std::normal_distribution<> d(mu, sigma);
   return(d(gen));
-};
+}

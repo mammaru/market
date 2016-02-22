@@ -8,7 +8,7 @@ int main() {
 
   //std::cout << randn(0, 0.1) << std::endl;
 
-  int NN = 10; // number of time points
+  int NN = 50; // number of time points
   int pp = 5; // observation dimention
   int kk = 5; // system dimention
 
@@ -22,7 +22,10 @@ int main() {
 
   // generate Kalman instance and set observation data
   Kalman *kal = new Kalman();
-  kal->set_data(&(data[0][0]), NN, pp, kk);
+  //kal->set_data(&(data[0][0]), NN, pp, kk);
+  MatrixXd tmp = Map<Matrix<double, Dynamic, Dynamic> >(&(data[0][0]), pp, NN);
+  kal->set_params(NN, pp, kk);
+  kal->set_data(&tmp);
 
   // execute kalman methods
   kal->execute();
@@ -31,6 +34,8 @@ int main() {
 
   // EM algorithm that estimate parameters
   kal->em();
+
+  // prediction based on estimated parameters
   Matrix<double, Dynamic, Dynamic> yhat = kal->predict();
   PRINT_MAT(yhat);
   //results *r = kal->get_results();
