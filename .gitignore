@@ -6,6 +6,8 @@
 *.out
 main
 *.o
+.RData
+.Rhistory
 
 # directries
 .bundle/
