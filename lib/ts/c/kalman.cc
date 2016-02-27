@@ -8,7 +8,7 @@
  **********************************************************************************************/
 #include "kalman.h"
 
-using namespace TS;
+using namespace ts;
 using namespace Eigen;
 
 void Kalman::set_params(int n, int obs_d, int sys_d) {

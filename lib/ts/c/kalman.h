@@ -5,7 +5,7 @@
 #define PRINT_MAT(X) std::cout << #X << ":\n" << X << std::endl << std::endl
 #define PI 3.1415926535
 
-namespace TS {
+namespace ts {
   typedef struct {
     Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> F;
     Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> H;

@@ -2,7 +2,7 @@
 #include "mvrandom.h"
 
 using namespace Eigen;
-using namespace TS;
+using namespace ts;
 
 int main() {
 
@@ -22,10 +22,10 @@ int main() {
 
   // generate Kalman instance and set observation data
   Kalman *kal = new Kalman();
-  //kal->set_data(&(data[0][0]), NN, pp, kk);
-  MatrixXd tmp = Map<Matrix<double, Dynamic, Dynamic> >(&(data[0][0]), pp, NN);
-  kal->set_params(NN, pp, kk);
-  kal->set_data(&tmp);
+  kal->set_data(&(data[0][0]), NN, pp, kk);
+  //MatrixXd tmp = Map<Matrix<double, Dynamic, Dynamic> >(&(data[0][0]), pp, NN);
+  //kal->set_params(NN, pp, kk);
+  //kal->set_data(&tmp);
 
   // execute kalman methods
   kal->execute();
