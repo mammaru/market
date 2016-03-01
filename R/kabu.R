@@ -1,8 +1,8 @@
 library(quantmod)
-#sony1 <- getSymbols("6758.T", src="yahooj", auto.assign=FALSE)
-#head(sony1)
+#sony <- getSymbols("6758.T", src="yahooj", auto.assign=FALSE)
+#head(sony)
 chartSeries(sony1, subset="2015::2015-04", theme=chartTheme("white"), TA="addVo(); addBBands()")
-reChart(subset="2015-09-01::2016-02-31")
+reChart(subset="2015-11-01::2016-02-31")
 
 
 #library(RFinanceYJ)
