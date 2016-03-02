@@ -1,32 +1,37 @@
-library(quantmod)
 library(RSQLite)
 library(xts)
 
-dbname <- "../data/stock/db/daily/2015.sqlite3"
-driver <- dbDriver("SQLite")
-con <- dbConnect(driver,dbname)
+get_stock <- function(code, interval){
+  date <- strsplit(interval,"::")[[1]]
+  year1 <- substr(date[1],1,4)
+  year2 <- substr(date[2],1,4)
+  year = year1
+  stock <- numeric(0)
+  while(1){
+    dbname <- paste("../data/stock/db/daily/",year,".sqlite3",sep="")
+    driver <- dbDriver("SQLite")
+    con <- dbConnect(driver,dbname)
 
-# get data
-codes <- dbGetQuery(con, "select code, name from names")
-datings <- dbGetQuery(con, "select id, date from datings")
-closes <- dbGetQuery(con, "select code, dating_id, close from prices")
-stock <- dbGetQuery(con, "select dating_id, open, high, low, close, volume from prices where code=1378")
+    # get data
+    codes <- dbGetQuery(con, "select code, name from names")
+    datings <- dbGetQuery(con, "select id, date from datings")
+    closes <- dbGetQuery(con, "select code, dating_id, close from prices")
+    query <- paste("select dating_id, open, high, low, close, volume from prices where code=",as.character(code),sep="")
+    stock_tmp <- dbGetQuery(con, query)
 
-stock <- merge(datings,stock,by.x="id",by.y="dating_id")[,-1]
-rownames(stock) <- stock[,1]
-stock <- stock[,-1]
-as.xts(stock)
-
-chartSeries(stock, subset="2015::2015-12", theme=chartTheme("white"), TA="addVo(); addBBands()")
-reChart(subset="2015-11-01::2016-02-31")
-
-#create dataframe
-prices = data.frame(matrix(rep(NA,nrow(codes)*nrow(datings)),nrow=nrow(datings)))
-colnames(prices) = codes["code"]
-#rownames(prices) = datings["date"]
-
-for(i in 1:nrow(datings)){ 
-  s = subset(closes, dating_id==i)["close"]
-  
-
+    stock_tmp <- merge(datings,stock_tmp,by.x="id",by.y="dating_id")[,-1]
+    rownames(stock_tmp) <- stock_tmp[,1]
+    stock_tmp <- stock_tmp[,-1]
+    if(year==year2){
+      stock <- rbind(stock,stock_tmp)
+      break
+    }else{
+      stock <- stock_tmp
+      year <- year2
+    }
+  }
+  stock <- as.xts(stock)
+  return(stock[seq(as.Date(date[1]),as.Date(date[2]),by="days")])
 }
+
+
