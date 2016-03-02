@@ -4,7 +4,7 @@ source("db.R")
 stock <- get_stock(1001,"2014-01-01::2016-02-29")
 
 chartSeries(stock, subset="2014-01-01::2016-02-29", theme=chartTheme("white"), TA="addVo(); addBBands()")
-#reChart(subset="2015-11-01::2016-02-29")
+reChart(subset="2014-01-01::2016-02-29")
 
 
 #sony <- getSymbols("6758.T", src="yahooj", auto.assign=FALSE)
