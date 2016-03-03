@@ -3,38 +3,27 @@ library(zoo)
 library(TSclust)
 source("db.R")
 
-#stock <- get_stock(1001,"2014-01-01::2016-02-29")
-#chartSeries(stock, subset="2014-01-01::2016-02-29", theme=chartTheme("white"), TA="addVo(); addBBands()")
-#reChart(subset="2014-01-01::2016-02-29")
+# get data
+daily <- get_stock(3393, "2014-01-01::2016-02-29")
+weekly <- daily[endpoints(daily, "weeks")]
+monthly <- daily[endpoints(daily, "months")]
+#daily <- getSymbols("6758.T", src="yahooj", auto.assign=FALSE) # from yahoo! japan
 
 #stocks <- get_stocks("2015-01-01::2016-02-29")
-tmp <- stocks[,1000:1500]
-#d <- na.approx(stocks)
-data <- na.locf(tmp)
-data <- na.locf(data, fromLast = TRUE)
+
+
+# draw candle chart
+chartSeries(weekly, subset="2014-01-01::2016-02-29", TA="addVo(); addBBands()")
+reChart(subset="2015-10-01::2016-02-29")
+
+#draw cluster dendrogram
+data <- na.spline(stocks[1:50,1000:1100])
+data <- scale(apply(data, c(1,2), log))
+
+#data <- na.approx(stocks) # linear
+#data <- na.locf(stocks)
+#data <- na.locf(stocks, fromLast = TRUE)
 d <- diss(t(data), "DTWARP")
 h <- hclust(d)
 par(cex=0.6)
 plot(h, hang = -1)
-
-
-
-#sony <- getSymbols("6758.T", src="yahooj", auto.assign=FALSE)
-#head(sony)
-#chartSeries(sony1, subset="2015::2015-04", theme=chartTheme("white"), TA="addVo(); addBBands()")
-#reChart(subset="2015-11-01::2016-02-31")
-
-
-#library(RFinanceYJ)
-#sony2 <- quoteStockTsData("6758.T", since="2016-01-01") 
-#head(sony2)
-
-
-#create dataframe
-#prices = data.frame(matrix(rep(NA,nrow(codes)*nrow(datings)),nrow=nrow(datings)))
-#colnames(prices) = codes["code"]
-#rownames(prices) = datings["date"]
-
-#for(i in 1:nrow(datings)){ 
-  #s = subset(closes, dating_id==i)["close"]
-#}
