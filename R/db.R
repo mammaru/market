@@ -60,48 +60,11 @@ get_stocks <- function(interval){
       year <- as.character(as.integer(year) + 1)
     }
   }
-  print(colnames(all_stocks))
+  #print(colnames(all_stocks))
   all_stocks <- reshape(all_stocks, timevar= "code", idvar="date", direction = "wide")
   rownames(all_stocks) <- all_stocks[,1]
   all_stocks <- all_stocks[,-1]
   colnames(all_stocks) <- as.vector(sapply(colnames(all_stocks), function(x){return(as.integer(strsplit(x,"\\.")[[1]][2]))}))
   all_stocks <- as.xts(all_stocks)
   return(all_stocks[seq(as.Date(date[1]), as.Date(date[2]), by="days")])
-}
-
-
-get_stocks2 <- function(interval){
-  date <- strsplit(interval, "::")[[1]]
-  year1 <- substr(date[1], 1, 4)
-  year2 <- substr(date[2], 1, 4)
-  if(as.integer(year1)>as.integer(year2)){
-    stop("Invalid interval is given")
-  }
-  year <- year1
-  codes <- numeric(0)
-  while(1){
-    dbname <- paste("../data/stock/db/daily/", year, ".sqlite3", sep="")
-    driver <- dbDriver("SQLite")
-    con <- dbConnect(driver, dbname)
-    codes <- rbind(codes, dbGetQuery(con, "select code, name from names"))
-    if(year==year2){
-      break
-    }else{
-      year <- as.character(as.integer(year) + 1)
-    }
-  }
-  codes[!duplicated(codes$code),]
-  #print(codes)
-  stocks <- numeric(0)
-  for(code in codes[,"code"]){
-    stock <- get_stock(code, interval)
-    print(dim(stock))
-    if(is.null(dim(stocks))){
-      stocks <- stock
-    }else{
-      stocks <- cbind(stocks, stock[,"close"])
-    }
-  }
-  colnames(stocks) <- codes[,"code"]
-  return(stocks)
 }

@@ -1,4 +1,5 @@
 library(quantmod)
+library(zoo)
 library(TSclust)
 source("db.R")
 
@@ -6,7 +7,17 @@ source("db.R")
 #chartSeries(stock, subset="2014-01-01::2016-02-29", theme=chartTheme("white"), TA="addVo(); addBBands()")
 #reChart(subset="2014-01-01::2016-02-29")
 
-#stocks <- get_stocks("2016-01-01::2016-02-29")
+#stocks <- get_stocks("2015-01-01::2016-02-29")
+tmp <- stocks[,1000:1500]
+#d <- na.approx(stocks)
+data <- na.locf(tmp)
+data <- na.locf(data, fromLast = TRUE)
+d <- diss(t(data), "DTWARP")
+h <- hclust(d)
+par(cex=0.6)
+plot(h, hang = -1)
+
+
 
 #sony <- getSymbols("6758.T", src="yahooj", auto.assign=FALSE)
 #head(sony)
