@@ -12,6 +12,8 @@ spiders/
 .#*
 *.sqlite3
 config.yml
+*.csv
+*.txt
 
 ## white list
 !spider.rb
