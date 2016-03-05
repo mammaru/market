@@ -1,10 +1,11 @@
 source("chart.R")
 
 code <- 3583
-interval <- "2014-01-01::2016-02-29"
-candle(code, interval, "d")
+interval <- "2011-01-01::2016-12-31"
+stock <- get_stock(code, interval)
+candle(code, interval, "w")
 #reChart(subset="2015-10-01::2016-02-29")
-
+plot(dat[,as.character(code)],type="b")
 
 
 # get data
@@ -27,5 +28,3 @@ plot(h, hang = -1)
 rect.hclust(h, k=10, border="red")
 
 
-plot(dat[,"3649"],type="b")
-plot(dat[,"3662"],type="b")

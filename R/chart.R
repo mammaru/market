@@ -15,5 +15,5 @@ candle <- function(code, interval, type){
     stop("type must be \"d\", \"w\" or \"m\"")
   }
   # draw candle chart
-  chartSeries(dat, subset="2015-01-01::2016-02-29", theme = chartTheme("white"), TA="addVo(); addBBands()")
+  chartSeries(dat, subset=interval, theme = chartTheme("white"), TA="addVo(); addBBands()")
 }

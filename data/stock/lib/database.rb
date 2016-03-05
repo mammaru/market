@@ -73,6 +73,8 @@ class DataBase
                      :close => stock[:close].to_i,
                      :volume => stock[:volume].to_f)
       end
+    else
+      puts "Skip: Data already exist"
     end
   end
 

@@ -1,12 +1,7 @@
 # coding: utf-8
-require 'zipruby'
 require 'open-uri'
-require 'jpstock'
 require 'date'
 
-#stock = JpStock.price(:code => "4689")
-#stocks = JpStock.sector(:id=>"0050")
-#pp stocks
 
 module Stock
   
@@ -19,11 +14,8 @@ module Stock
     FileUtils.mkdir_p(path_to_save) unless FileTest.exist?(path_to_save)
 
     # Download and load data
-    if Date.parse(date.strftime("%Y-%m-%d")).wday==0
-      puts "Pass: #{date.strftime("%Y-%m-%d")} was sunday"
-      return nil
-    elsif Date.parse(date.strftime("%Y-%m-%d")).wday==6
-      puts "Pass: #{date.strftime("%Y-%m-%d")} was saturday"
+    if Date.parse(date.strftime("%Y-%m-%d")).wday%6==0
+      puts "Failed: #{date.strftime("%Y-%m-%d")} might be holiday"
       return nil
     elsif file_path = Dir.glob("#{path_to_save}**#{yymmdd}.txt")[0]
       puts "Load #{file_path}"
@@ -53,15 +45,14 @@ module Stock
     file = open(file_path)
     
     # get date
-    ymd = file.gets.encode("utf-8", "Shift_JIS", :universal_newline => true).chomp
+    ymd = file.gets.encode("utf-8", "Shift_JIS").chomp
     #puts date = Time.new(ymd[0..3], ymd[4..5], ymd[6..7])
     
     stocks = {:date => date, :values => []}    
     keys = [:code, :name, :open, :high, :low, :close, :volume]
     file.each_line do |line|
-      values = line.encode("utf-8", "Shift_JIS", :universal_newline => true, :invalid => :replace).chomp.split("\t")
-      #values = line.sub("\r", "").force_encoding("utf-8").chomp.split("\t")
-      ary = [keys, values].transpose     
+      values = line.encode("utf-8", "Shift_JIS").chomp.split("\t")
+      ary = [keys,values].transpose     
       stocks[:values].push(Hash[*ary.flatten])
     end
     file.close

@@ -8,6 +8,7 @@ main
 *.o
 .RData
 .Rhistory
+config.yml
 
 # directries
 .bundle/
