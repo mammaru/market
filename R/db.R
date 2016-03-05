@@ -11,7 +11,7 @@ get_stock <- function(code, interval){
   year <- year1
   stock <- numeric(0)
   while(1){
-    dbname <- paste("../data/stock/db/daily/", year, ".sqlite3", sep="")
+    dbname <- paste("../data/stock/", year, ".sqlite3", sep="")
     driver <- dbDriver("SQLite")
     con <- dbConnect(driver, dbname)
 
@@ -44,7 +44,7 @@ get_stocks <- function(interval){
   year <- year1
   all_stocks <- numeric(0)
   while(1){
-    dbname <- paste("../data/stock/db/daily/", year, ".sqlite3", sep="")
+    dbname <- paste("../data/stock/", year, ".sqlite3", sep="")
     driver <- dbDriver("SQLite")
     con <- dbConnect(driver, dbname)
 
