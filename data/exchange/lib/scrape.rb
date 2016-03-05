@@ -1,7 +1,7 @@
 # coding: utf-8
 require 'open-uri'
 require 'date'
-
+require 'yaml'
 
 module Stock
   
@@ -10,7 +10,7 @@ module Stock
     yymmdd = date.strftime("%y%m%d")
     path_to_save = File.expand_path("#{__dir__}/../txt/#{y}")+"/"
 
-    #Create directory if not exist
+    # Create directory if not exist
     FileUtils.mkdir_p(path_to_save) unless FileTest.exist?(path_to_save)
 
     # Download and load data
@@ -25,13 +25,13 @@ module Stock
     else
       begin 
         zip_name = "d#{yymmdd}.zip"
-        zip_path = "http://www.geocities.co.jp/WallStreet-Stock/9256/#{zip_name}"
+        zip_path = "http://www.hogehoge/#{zip_name}"
         sleep(3)
         file_path = unzip(zip_path, path_to_save)
       rescue
         begin
           zip_name = "y#{yymmdd}.zip"
-          zip_path = "http://www.geocities.co.jp/WallStreet-Stock/9256/#{zip_name}"
+          zip_path = "http://www.hogehoge/#{zip_name}"
           sleep(3)
           file_path = unzip(zip_path, path_to_save)
         rescue

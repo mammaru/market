@@ -1,12 +1,9 @@
 # coding: utf-8
 require 'zipruby'
 require 'open-uri'
-require 'jpstock'
 require 'date'
+require 'yaml'
 
-#stock = JpStock.price(:code => "4689")
-#stocks = JpStock.sector(:id=>"0050")
-#pp stocks
 
 module Stock
   
@@ -15,15 +12,15 @@ module Stock
     yymmdd = date.strftime("%y%m%d")
     path_to_save = File.expand_path("#{__dir__}/../txt/#{y}")+"/"
 
-    #Create directory if not exist
+    # Create directory if not exist
     FileUtils.mkdir_p(path_to_save) unless FileTest.exist?(path_to_save)
 
     # Download and load data
     if Date.parse(date.strftime("%Y-%m-%d")).wday==0
-      puts "Pass: #{date.strftime("%Y-%m-%d")} was sunday"
+      puts "Skip: #{date.strftime("%Y-%m-%d")} was sunday"
       return nil
     elsif Date.parse(date.strftime("%Y-%m-%d")).wday==6
-      puts "Pass: #{date.strftime("%Y-%m-%d")} was saturday"
+      puts "Skip: #{date.strftime("%Y-%m-%d")} was saturday"
       return nil
     elsif file_path = Dir.glob("#{path_to_save}**#{yymmdd}.txt")[0]
       puts "Load #{file_path}"
@@ -43,7 +40,7 @@ module Stock
           sleep(3)
           file_path = unzip(zip_path, path_to_save)
         rescue
-          puts "Failed: #{date.strftime("%Y-%m-%d")} is holiday or has not been uploaded yet"
+          puts "Skip: #{date.strftime("%Y-%m-%d")} is holiday or has not been uploaded yet"
           return nil
         end
         puts "Download from #{zip_path}"
