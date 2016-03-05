@@ -1,18 +1,16 @@
 # directries
 ## black list
-.bundle/
-log/
-txt/
-spiders/
+Eigen/
+pf/
+*.dSYM
 
 
 # files
 ## black list
 .DS_Store
-.#*
-*.sqlite3
-config.yml
+*.out
+main
+*.o
 
 ## white list
-!spider.rb
 
