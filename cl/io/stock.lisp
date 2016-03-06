@@ -1,15 +1,5 @@
-(require 'drakma)
 (require 'cl-csv)
-
-(defun download-file (filename uri)
-  (with-open-file (out filename
-											 :direction :output
-											 :if-exists :supersede
-											 :element-type '(unsigned-byte 8))
-    (with-open-stream (input (drakma:http-request uri :want-stream t :connection-timeout nil))
-      (loop :for b := (read-byte input nil -1)
-				 :until (minusp b)
-				 :do (write-byte b out)))))
+(require 'util)
 
 ;; 利用例
 (download-file "daily.csv" "http://k-db.com/?p=all&download=csv")
@@ -34,10 +24,10 @@
 (time
  (cl-csv:read-csv #P"daily.csv"))
 
-(time
- (let ((data (cl-csv:read-csv #P"daily.csv")))
-	 (values (apply #'vector (first data))
-					 (apply #'vector (rest (mapcar #'first data)))
-					 (apply #'vector 
-									(mapcar #'read-from-string (loop :for row :in (rest data)
-																								:append (rest row)))))))
+
+(let ((data (cl-csv:read-csv #P"daily.csv")))
+	(progn
+		(print (first data))
+		(print (rest (mapcar #'first data)))))
+		 ;(print (mapcar #'read-from-string (loop :for row :in (rest data)
+			;																		:append (rest row)))))))
