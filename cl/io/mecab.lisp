@@ -1,3 +1,4 @@
+;(ql:quickload 'mecab)
 (use-package :sb-alien)
 
 (load-shared-object "/usr/local/lib/libmecab.dylib")
@@ -6,8 +7,6 @@
 (define-alien-routine "mecab_sparse_tostr" c-string (mecab (* t)) (text c-string))
 (define-alien-routine "mecab_destroy" void (mecab (* t)))
 
-;;;;;;;;
-;;;; wrapper
 (defvar *mecab*)
 
 (defun mecab-parse (text &optional (*mecab* *mecab*))
