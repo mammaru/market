@@ -1,16 +1,25 @@
+(provide 'market)
+
+(defpackage market
+	(:use common-lisp cl-csv util cl-fad)
+	(:export update stock))
 (require 'cl-csv)
 (require 'util)
 
-(defclass market ()
-	(database))
+(defmacro with-download-csv (uri file-name &optional (variable-name 'data) &body body)
+	(progn
+		(download-file uri file-name)
+		(setf cl-csv:*default-external-format* :sjis)
+		`(let ((,variable-name ,(cl-csv:read-csv file-name :trim-outer-whitespace t)))
+			 ,@body)
+		(cl-fad:delete-directory-and-files file-name)))
 
-(defgeneric update (market)
-	(:documentation "update data"))
-
-(defclass stock (market)
-	)
-
-(download-file "daily.csv" "http://k-db.com/?p=all&download=csv")
+(defun update ()
+	(progn
+		(download-file "http://k-db.com/?p=all&download=csv" "daily.csv")
+		(setf cl-csv:*default-external-format* :sjis)
+		(let ((daily-data (cl-csv:read-csv #P"daily.csv" :trim-outer-whitespace t)))
+			(let ((date (caar daily-data) ) (column-name cadr daily-data))))))
 
 
 
@@ -19,6 +28,7 @@
 (time
  (cl-csv:read-csv #P"daily.csv"))
 
+(caddr (cl-csv:read-csv #P"daily.csv" :trim-outer-whitespace t))
 
 (let ((data (cl-csv:read-csv #P"daily.csv" :trim-outer-whitespace t)))
 	(values (first data)
@@ -30,7 +40,7 @@
 (require 'clsql)
 (require 'clsql-sqlite3)
 (clsql:connect '("2016.sqlite3") :database-type :sqlite3)
-;(clsql:locally-enable-sql-reader-syntax)
+;;;(clsql:locally-enable-sql-reader-syntax)
 (clsql:select 'code 'name :from 'names)
 (clsql:disconnect)
 
