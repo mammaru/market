@@ -17,5 +17,11 @@
 				 :until (minusp b)
 				 :do (write-byte b out)))))
 
+(defun today ()
+	(multiple-value-bind (sec min hour d m y)
+			(get-decoded-time)
+		(concatenate 'string (princ-to-string y) "-" (princ-to-string m) "-" (princ-to-string d))))
+
+
 (defmacro scrape ((uri) &body body)
 	`(,@body))

@@ -1,19 +1,6 @@
-;(ql:quickload 'mecab)
-(use-package :sb-alien)
+(ql:quickload 'mecab)
+(use-package :mecab)
 
-(load-shared-object "/usr/local/lib/libmecab.dylib")
+(mecab:sparse-tostr "めかぶは日本語文字列を形態素解析するためのライブラリです。")
 
-(define-alien-routine "mecab_new2" (* t) (param c-string))
-(define-alien-routine "mecab_sparse_tostr" c-string (mecab (* t)) (text c-string))
-(define-alien-routine "mecab_destroy" void (mecab (* t)))
-
-(defvar *mecab*)
-
-(defun mecab-parse (text &optional (*mecab* *mecab*))
-  (mecab-sparse-tostr *mecab* text))
-
-(defmacro with-mecab ((&optional (option "")) &body body)
-  `(let ((*mecab* (mecab-new2 ,option)))
-      (unwind-protect
-           (progn ,@body)
-         (mecab-destroy *mecab*))))
+(mecab:wakati "めかぶは日本語文字列を形態素解析するためのライブラリです。")
