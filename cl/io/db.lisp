@@ -1,4 +1,4 @@
-(provide 'database)
+(in-package :database)
 
 (defpackage database (:use common-lisp) (:export database store))
 (in-package database)

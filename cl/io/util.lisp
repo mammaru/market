@@ -1,7 +1,17 @@
-(provide 'util)
+(in-package :cl-user)
+(provide market-utils)
 
-(defpackage util (:use common-lisp drakma) (:export download-file))
-(in-package util)
+(defpackage :market-utils
+	(:use
+	 :common-lisp
+	 :drakma
+	 :cl-csv)
+	(:export
+	 :with-gensyms
+	 :download-file
+	 :today
+	 :with-download-csv))
+(in-package :market-utils)
 
 (defmacro with-gensyms ((&rest names) &body body)
 	`(let ,(loop for n in names collect `(,n (gensym)))
@@ -22,6 +32,10 @@
 			(get-decoded-time)
 		(concatenate 'string (princ-to-string y) "-" (princ-to-string m) "-" (princ-to-string d))))
 
-
-(defmacro scrape ((uri) &body body)
-	`(,@body))
+(defmacro with-download-csv (uri file-name &optional (data-sym :data) &body body)
+	(progn
+		(download-file uri file-name)
+		(setf cl-csv:*default-external-format* :sjis)
+		`(let ((,data-sym ,(cl-csv:read-csv file-name :trim-outer-whitespace t)))
+			 ,@body)
+		(cl-fad:delete-directory-and-files file-name)))

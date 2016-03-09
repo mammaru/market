@@ -1,20 +1,25 @@
-(provide 'market)
+(in-package :market)
 
-(defpackage market
-	(:use common-lisp cl-csv util cl-fad)
-	(:export update stock))
-(require 'cl-csv)
-(require 'util)
+(defclass market-data ()
+	((database-name
+		:initform (error "Must define database-name in child class"))
+	 (updated-p
+		:initform nil
+		:reader updated-p)
+	 (last-modified
+		:initform nil
+		:reader last-modified)))
 
-(defmacro with-download-csv (uri file-name &optional (variable-name 'data) &body body)
-	(progn
-		(download-file uri file-name)
-		(setf cl-csv:*default-external-format* :sjis)
-		`(let ((,variable-name ,(cl-csv:read-csv file-name :trim-outer-whitespace t)))
-			 ,@body)
-		(cl-fad:delete-directory-and-files file-name)))
+(defclass stock (market-data)
+	(database-name
+	 :initform "stock.sqlite3"))
 
-(defun update ()
+(defgeneric update (market-data))
+
+(defmethod initialize-instance :after ((market-data stock) &key)
+	())
+
+(defmethod update (market-data stock)
 	(progn
 		(download-file "http://k-db.com/?p=all&download=csv" "daily.csv")
 		(setf cl-csv:*default-external-format* :sjis)
@@ -39,6 +44,7 @@
 
 (require 'clsql)
 (require 'clsql-sqlite3)
+
 (clsql:connect '("2016.sqlite3") :database-type :sqlite3)
 ;;;(clsql:locally-enable-sql-reader-syntax)
 (clsql:select 'code 'name :from 'names)
@@ -46,12 +52,16 @@
 
 (defun get-stock (db-name code)
 	(clsql-sys:with-database (con db-name :if-exists :old :database-type :sqlite3)
-		(let ((stmt (concatenate 'string "select * from prices where code = " (write-to-string code))))
+		(let ((stmt (concatenate 'string "select dating_id, code, open, high, low, close from prices where code = " (write-to-string code))))
 			(pprint stmt)
 			(let ((stock (clsql-sys:query stmt :database con)))
 				(pprint stock)))))
 
+(get-stock "2016.sqlite3" 1002)
+
 (defun get-last-modified (db-name)
 	(clsql-sys:with-database (con db-name :if-exists :old :database-type :sqlite3)
 		(let ((last-modified (clsql-sys:query "select max(id), date from datings" :database con :flatp t)))
-			(cadar last-modified))))
+			(pprint (cadar last-modified)))))
+
+(get-last-modified "2016.sqlite3")
