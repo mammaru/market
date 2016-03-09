@@ -1,7 +1,8 @@
-(in-package :cl-user)
-(provide market-utils)
+(in-package :market)
+(provide market.utils)
 
-(defpackage :market-utils
+
+(defpackage :market.utils
 	(:use
 	 :common-lisp
 	 :drakma
@@ -11,7 +12,7 @@
 	 :download-file
 	 :today
 	 :with-download-csv))
-(in-package :market-utils)
+(in-package :market.utils)
 
 (defmacro with-gensyms ((&rest names) &body body)
 	`(let ,(loop for n in names collect `(,n (gensym)))
@@ -27,10 +28,14 @@
 				 :until (minusp b)
 				 :do (write-byte b out)))))
 
-(defun today ()
+(defun now (&optional (d-or-t "date"))
 	(multiple-value-bind (sec min hour d m y)
 			(get-decoded-time)
-		(concatenate 'string (princ-to-string y) "-" (princ-to-string m) "-" (princ-to-string d))))
+		(if (string= d-or-t "date")
+				(concatenate 'string (princ-to-string y) "-" (princ-to-string m) "-" (princ-to-string d))
+				(if (string= d-or-t "time")
+						(concatenate 'string (princ-to-string hour) ":" (princ-to-string min) ":" (princ-to-string sec))
+						(error "invarid argument")))))
 
 (defmacro with-download-csv (uri file-name &optional (data-sym :data) &body body)
 	(progn

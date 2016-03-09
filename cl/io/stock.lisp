@@ -1,4 +1,5 @@
 (in-package :market)
+(require 'market.utils)
 
 (defclass market-data ()
 	((database-name
@@ -11,15 +12,19 @@
 		:reader last-modified)))
 
 (defclass stock (market-data)
-	(database-name
-	 :initform "stock.sqlite3"))
+	((database-name
+	 :initform "stock.sqlite3")))
 
-(defgeneric update (market-data))
+(defgeneric update (data)
+	(:documentation "Update database"))
 
-(defmethod initialize-instance :after ((market-data stock) &key)
+(defmethod initialize-instance :after ((data stock) &key)
 	())
 
-(defmethod update (market-data stock)
+(defmethod update ((data market-data))
+	())
+
+(defmethod update ((data stock))
 	(progn
 		(download-file "http://k-db.com/?p=all&download=csv" "daily.csv")
 		(setf cl-csv:*default-external-format* :sjis)
