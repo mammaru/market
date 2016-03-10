@@ -1,7 +1,12 @@
-(in-package :database)
+(in-package :common-lisp)
 
-(defpackage database (:use common-lisp) (:export database store))
-(in-package database)
+(defpackage database
+	(:use common-lisp clsql clsql-sqlite3)
+	(:nickname db)
+	(:export database
+					 store))
+
+(in-package :database)
 
 (defclass database ()
 	((type

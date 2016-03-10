@@ -1,9 +1,4 @@
 (in-package :common-lisp)
-(require 'drakma)
-(require 'cl-csv)
-(require 'cl-fad)
-(require 'clsql)
-(require 'clsql-sqlite3)
 ;;;(provide market.utils)
 
 (defpackage market.utils
