@@ -1,17 +1,20 @@
-(in-package :market)
-(provide market.utils)
+(in-package :common-lisp)
+(require 'drakma)
+(require 'cl-csv)
+(require 'cl-fad)
+(require 'clsql)
+(require 'clsql-sqlite3)
+;;;(provide market.utils)
 
+(defpackage market.utils
+	(:use common-lisp
+				drakma
+				cl-csv)
+	(:export with-gensyms
+					 download-file
+					 today
+					 with-download-csv))
 
-(defpackage :market.utils
-	(:use
-	 :common-lisp
-	 :drakma
-	 :cl-csv)
-	(:export
-	 :with-gensyms
-	 :download-file
-	 :today
-	 :with-download-csv))
 (in-package :market.utils)
 
 (defmacro with-gensyms ((&rest names) &body body)
@@ -28,14 +31,26 @@
 				 :until (minusp b)
 				 :do (write-byte b out)))))
 
-(defun now (&optional (d-or-t "date"))
-	(multiple-value-bind (sec min hour d m y)
-			(get-decoded-time)
-		(if (string= d-or-t "date")
-				(concatenate 'string (princ-to-string y) "-" (princ-to-string m) "-" (princ-to-string d))
-				(if (string= d-or-t "time")
-						(concatenate 'string (princ-to-string hour) ":" (princ-to-string min) ":" (princ-to-string sec))
-						(error "invarid argument")))))
+(defun today ()
+	(labels ((n-to-0n (n)
+						 (if (and (< n 10) (> n 0))
+								 (concatenate 'string "0" (write-to-string n))
+								 (write-to-string n))))
+		(multiple-value-bind (sec min hour d m y)
+				(get-decoded-time)
+			(values (concatenate 'string (write-to-string y) "-" (n-to-0n m) "-" (n-to-0n d))
+							(concatenate 'string (n-to-0n hour) ":" (n-to-0n min) ":" (n-to-0n sec)) ))))
+
+(defun now ()
+	(labels ((n-to-0n (n)
+						 (if (and (< n 10) (> n 0))
+								 (concatenate 'string "0" (write-to-string n))
+								 (write-to-string n))))
+		(multiple-value-bind (sec min hour d m y)
+				(get-decoded-time)
+			(values	(concatenate 'string (n-to-0n hour) ":" (n-to-0n min) ":" (n-to-0n sec))
+							(concatenate 'string (write-to-string y) "-" (n-to-0n m) "-" (n-to-0n d)) ))))
+
 
 (defmacro with-download-csv (uri file-name &optional (data-sym :data) &body body)
 	(progn
