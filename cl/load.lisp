@@ -8,5 +8,5 @@
 (require 'mecab)
 ;(use-package :mecab)
 
-(load "util.lisp")
-(load "market.lisp")
+;(load "util.lisp")
+;(load "market.lisp")

@@ -31,8 +31,7 @@
 						 (if (and (< n 10) (> n 0))
 								 (concatenate 'string "0" (write-to-string n))
 								 (write-to-string n))))
-		(multiple-value-bind (sec min hour d m y)
-				(get-decoded-time)
+		(multiple-value-bind (sec min hour d m y) (get-decoded-time)
 			(values (concatenate 'string (write-to-string y) "-" (n-to-0n m) "-" (n-to-0n d))
 							(concatenate 'string (n-to-0n hour) ":" (n-to-0n min) ":" (n-to-0n sec)) ))))
 
@@ -41,8 +40,7 @@
 						 (if (and (< n 10) (> n 0))
 								 (concatenate 'string "0" (write-to-string n))
 								 (write-to-string n))))
-		(multiple-value-bind (sec min hour d m y)
-				(get-decoded-time)
+		(multiple-value-bind (sec min hour d m y)	(get-decoded-time)
 			(values	(concatenate 'string (n-to-0n hour) ":" (n-to-0n min) ":" (n-to-0n sec))
 							(concatenate 'string (write-to-string y) "-" (n-to-0n m) "-" (n-to-0n d)) ))))
 
