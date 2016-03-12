@@ -20,12 +20,13 @@
 		:initform (error "Must specify root url")
 		:accessor root-url
 		:type 'string)
+	 (default-encoding)
 	 (sleep-time
 		:initarg :sleep
 		:initform 5
 		:accessor sleep-time
 		:type 'number)
-	 (fetched-doc
+	 (text
 		:initform nil
 		:accessor doc
 		:type 'string) ))
@@ -40,15 +41,15 @@
 	(:documentation "fetch and parse html"))
 
 (defmethod fetch (spider url)
-	(with-slots ((doc doc)) spider
+	(with-slots ((doc text)) spider
 		(setf doc (drakma:http-request url)) ))
 
 (defmethod parse (spider)
-	(with-slots ((doc doc)) spider
+	(with-slots ((doc text)) spider
 		(values doc nil) ))
 
 (defmethod scrape (spider)
-	(with-slots ((root root-url) (sleep-time sleep-url)) spider
+	(with-slots ((root root-url) (st sleep-time)) spider
 		(let (results)
 			(labels ((recursive-scrape (url)
 								 (progn
@@ -57,7 +58,7 @@
 										 (cons result results)
 										 (if next-url
 												 (progn
-													 (sleep sleep-time)
+													 (sleep st)
 													 (recursive-scrape next-url))
 												 results) ))))
 				(recursive-scrape root) ))))
@@ -74,17 +75,11 @@
 							 `(sleep-time
 								 :initarg :sleep
 								 :initform ,sleep
-								 :accessor sleep-time) )))
+								 :accessor sleep-time
+								 :type 'number) )))
 			 (defmethod parse ((,sp ,sp-name))
-				 (with-slots ((,document doc)) ,sp
+				 (with-slots ((,document text)) ,sp
 					 ,@body) ))))
-
-;;;(defmacro with-scrape 
-;;;									:root-url ,sp-root-url
-;;;									,@(if recursive-p	`(:recursive? ,recursive-p))
-;;;									,@(if sleep-time `(:sleep-time ,sleep-time))
-;;;									,@(if body `(:parser ,@body) ))
-
 
 
 (defclass crawler ()
