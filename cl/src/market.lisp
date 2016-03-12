@@ -13,6 +13,8 @@
 (defclass market-data ()
 	((database-name
 		:initform (error "Must define database-name in child class"))
+	 (database
+	 	:initform (error "Must define database class"))
 	 (updated-p
 		:initform nil
 		:reader updated-p)
@@ -53,6 +55,16 @@
 					(pprint date)
 					(pprint column-name) ))
 			t)
+	(call-next-method))
+
+(defmethod outdated-p ((mk-data stock))
+	(if (not (string= (today) (get-last-modified mk-data))) t nil))
+
+(defmethod update2 ((mk-data stock) data)
+	(with-slots ((db database)) mk-data
+		(if (outdated-p mk-data)
+				(store data db)
+				t))
 	(call-next-method))
 
 (defmethod get-data ((data stock) code)
