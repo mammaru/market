@@ -1,3 +1,6 @@
+(eval-when (:compile-toplevel :load-toplevel)
+	(ql:quickload '(:drakma :jp :cl-ppcre)))
+
 (in-package :common-lisp)
 
 (defpackage crawl
@@ -7,6 +10,7 @@
 	(:export parse
 					 scrape
 					 define-spider
+					 with-scrape
 					 crawl))
 
 (in-package :crawl)
@@ -29,7 +33,11 @@
 	 (text
 		:initform nil
 		:accessor fetched-doc
-		:type 'string) ))
+		:type 'string)
+	 (jp
+		:initform nil
+		:initarg :jp
+		:type 'boolean)))
 
 (defgeneric fetch (spider url)
 	(:documentation "fetch web by http"))
@@ -42,7 +50,7 @@
 
 (defmethod fetch (spider url)
 	(with-slots ((doc text)) spider
-		(setf doc (string (drakma:http-request url))) ))
+		(setf doc (jp:decode (drakma:http-request url :force-binary t) :guess)) ))
 
 (defmethod parse (spider)
 	(with-slots ((doc text)) spider
@@ -55,12 +63,12 @@
 								 (progn
 									 (fetch spider url)
 									 (multiple-value-bind (result next-url) (parse spider)
-										 (cons result results)
+										 (setf results (cons result results))
 										 (if next-url
 												 (progn
 													 (sleep st)
-													 (recursive-scrape next-url))
-												 results)))))
+													 (recursive-scrape next-url)))
+										 results) )))
 				(recursive-scrape root) ))))
 
 (defmacro define-spider (sp-name (document sp-root-url &key sleep) &body body)
@@ -81,13 +89,17 @@
 				 (with-slots ((,document text)) ,sp
 					 ,@body) ))))
 
+(defmacro with-scrape ((data) sp-name &body body)
+	(with-gensyms (sp)
+		`(let* ((,sp (make-instance ',sp-name)) (,data (scrape ,sp)))
+			 ,@body) ))
 
-(defclass crawler ()
-	((spider
-		:initarg :spider
-		:initform nil
-		:accessor spider
-		:type 'spider)))
+(defmacro with-crawl ((data root-url &key (depth 1) sleep) &body body) 
+	(with-gensyms (sp)
+		`(progn
+			 (define-spider ,sp (doc ,root-url ,@(if sleep `(:sleep ,sleep)))
+				 ,@body)
+			 (with-scrape)
 
 (defgeneric crawl (crawler)
 	(:documentation "crawl web"))
