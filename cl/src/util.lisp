@@ -1,7 +1,7 @@
 (in-package :common-lisp)
 ;;;(provide market.utils)
 
-(defpackage market.utils
+(defpackage utils
 	(:use common-lisp
 				drakma
 				cl-csv)
@@ -10,11 +10,15 @@
 					 today
 					 with-download-csv))
 
-(in-package :market.utils)
+(in-package :utils)
 
-(defmacro with-gensyms ((&rest names) &body body)
-	`(let ,(loop for n in names collect `(,n (gensym)))
+(defmacro with-gensyms (syms &body body)
+	`(let ,(mapcar #'(lambda (s) `(,s (gensym))) syms)
 		 ,@body))
+
+;;;(defmacro with-gensyms ((&rest names) &body body)
+;;;	`(let ,(loop for n in names collect `(,n (gensym)))
+;;;		 ,@body))
 
 (defun download-file (uri filename)
   (with-open-file (out filename
