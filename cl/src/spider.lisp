@@ -28,7 +28,7 @@
 		:type 'number)
 	 (text
 		:initform nil
-		:accessor doc
+		:accessor fetched-doc
 		:type 'string) ))
 
 (defgeneric fetch (spider url)
@@ -42,7 +42,7 @@
 
 (defmethod fetch (spider url)
 	(with-slots ((doc text)) spider
-		(setf doc (drakma:http-request url)) ))
+		(setf doc (string (drakma:http-request url))) ))
 
 (defmethod parse (spider)
 	(with-slots ((doc text)) spider
@@ -60,7 +60,7 @@
 												 (progn
 													 (sleep st)
 													 (recursive-scrape next-url))
-												 results) ))))
+												 results)))))
 				(recursive-scrape root) ))))
 
 (defmacro define-spider (sp-name (document sp-root-url &key sleep) &body body)

@@ -3,8 +3,7 @@
 (defpackage database
 	(:use common-lisp
 				utils
-				clsql
-				clsql-sqlite3)
+				database)
 	(:nicknames db)
 	(:export database
 					 store))
@@ -14,7 +13,10 @@
 (defclass database ()
 	((adoptor
 		:initarg :adoptor
-		:initform (error "Must specify driver"))
+		:initform (error "Must specify adoptor"))
+	 (back-end
+		:initarg :back-end
+		:initform (error "Must specify database"))
 	 (pool
 		:initarg :pool
 		:initform 5
@@ -28,13 +30,20 @@
 	`(with-slots ((,adptr adoptor) (,pl pool) (,tout timeout)) ,instance
 			 ,@body))
 
-(defgeneric store (database)
+(defgeneric store (data db)
 	(:documentation "store data into database"))
 
 (defmethod initialize-instance :after ((db database) &key)
-	(with-slots ((adoptor adoptor))
-	(clsql:with-database (con '("localhost" "xxx" "xxx" nil) :if-exists :old :database-type :postgresql-socket)
-		(ignore-errors (clsql:create-view-from-class 'test0 :database con))))
+	(with-slots ((ad adoptor) (bk back-end)) db
+		(clsql:with-database (con '(bk) :if-exists :old :database-type adoptor)
+			(ignore-errors (clsql:create-view-from-class 'test0 :database con)))))
 
-(defmethod store (database)
-	)
+(defmethod store (data (db database))
+	(with-slots ((ad adoptor) (bk back-end)) db
+		(clsql:with-database (con '(bk) :if-exists :old :database-type adoptor)
+			(dolist (d data)
+				(clsql:insert-records :into prices
+															:attributes '(date code open high low close volume adjusted)
+															:values d
+															:database con) ))))
+
