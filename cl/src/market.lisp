@@ -60,7 +60,7 @@
 (defmethod outdated-p ((mk-data stock))
 	(if (not (string= (today) (get-last-modified mk-data))) t nil))
 
-(defmethod update2 ((mk-data stock) data)
+(defmethod update2 ((mk-data stock))
 	(with-slots ((db database)) mk-data
 		(if (outdated-p mk-data)
 				(store data db)

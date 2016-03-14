@@ -1,14 +1,19 @@
+(eval-when (:compile-toplevel :load-toplevel)
+	(ql:quickload '(:clsql :clsql-sqlite3))
+	(load "util.lisp"))
+
 (in-package :common-lisp)
 
-(defpackage database
+(defpackage market.database
 	(:use common-lisp
-				utils
-				database)
+				util
+				clsql
+				clsql-sqlite3)
 	(:nicknames db)
 	(:export database
 					 store))
 
-(in-package :database)
+(in-package :market.database)
 
 (defclass database ()
 	((adoptor

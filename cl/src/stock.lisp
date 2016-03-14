@@ -1,3 +1,7 @@
+(eval-when (:compile-toplevel :load-toplevel)
+	(load "database.lisp")
+	(load "spider.lisp"))
+
 (in-package :common-lisp)
 
 (defpackage market.data

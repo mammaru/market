@@ -7,7 +7,7 @@
 	(:use common-lisp
 				drakma
 				jp)
-	(:nicknames cl-crwl)
+	(:nicknames crwl)
 	(:export parse
 					 scrape
 					 define-spider

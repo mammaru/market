@@ -1,5 +1,7 @@
 (in-package :cl-user)
 
+(defparameter *root* (truename "./"))
+
 (require 'drakma)
 (require 'cl-csv)
 (require 'cl-fad)
@@ -8,5 +10,6 @@
 (require 'mecab)
 ;(use-package :mecab)
 
-(load "util.lisp")
-;(load "market.lisp")
+(defparameter *src* (merge-pathnames *root* #P"src/"))
+(load (merge-pathnames *root* "util.lisp")
+

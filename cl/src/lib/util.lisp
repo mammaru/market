@@ -3,18 +3,19 @@
 
 (in-package :common-lisp)
 
-(defpackage utils
+(defpackage util
 	(:use common-lisp
 				drakma
 				cl-csv
 				cl-fad)
+	(:nicknames util)
 	(:export with-gensyms
 					 download-file
 					 today
 					 now
 					 with-download-csv))
 
-(in-package :utils)
+(in-package :util)
 
 (defmacro with-gensyms (syms &body body)
 	`(let ,(mapcar #'(lambda (s) `(,s (gensym))) syms)
