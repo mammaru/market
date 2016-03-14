@@ -1,17 +1,17 @@
 (eval-when (:compile-toplevel :load-toplevel)
-	(ql:quickload '(:drakma :jp :cl-ppcre)))
+	(ql:quickload '(:drakma :jp)))
 
 (in-package :common-lisp)
 
 (defpackage crawl
 	(:use common-lisp
-				drakma)
+				drakma
+				jp)
 	(:nicknames cl-crwl)
 	(:export parse
 					 scrape
 					 define-spider
-					 with-scrape
-					 crawl))
+					 with-scrape))
 
 (in-package :crawl)
 
@@ -24,7 +24,6 @@
 		:initform (error "Must specify root url")
 		:accessor root-url
 		:type 'string)
-	 (default-encoding)
 	 (sleep-time
 		:initarg :sleep
 		:initform 5
@@ -33,11 +32,7 @@
 	 (text
 		:initform nil
 		:accessor fetched-doc
-		:type 'string)
-	 (jp
-		:initform nil
-		:initarg :jp
-		:type 'boolean)))
+		:type 'string)))
 
 (defgeneric fetch (spider url)
 	(:documentation "fetch web by http"))
@@ -89,20 +84,14 @@
 				 (with-slots ((,document text)) ,sp
 					 ,@body) ))))
 
-(defmacro with-scrape ((data) sp-name &body body)
+(defmacro with-scrape (sp-name (data) &body body)
 	(with-gensyms (sp)
 		`(let* ((,sp (make-instance ',sp-name)) (,data (scrape ,sp)))
 			 ,@body) ))
 
-(defmacro with-crawl ((data root-url &key (depth 1) sleep) &body body) 
-	(with-gensyms (sp)
-		`(progn
-			 (define-spider ,sp (doc ,root-url ,@(if sleep `(:sleep ,sleep)))
-				 ,@body)
-			 (with-scrape)
-
-(defgeneric crawl (crawler)
-	(:documentation "crawl web"))
-
-(defmethod crawl (crawler)
-	nil)
+;;;(defmacro with-crawl ((data root-url &key (depth 1) sleep) &body body) 
+;;;	(with-gensyms (sp)
+;;;		`(progn
+;;;			 (define-spider ,sp (doc ,root-url ,@(if sleep `(:sleep ,sleep)))
+;;;				 ,@body)
+;;;			 (with-scrape)

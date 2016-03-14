@@ -1,13 +1,17 @@
+(eval-when (:compile-toplevel :load-toplevel)
+	(ql:quickload '(:drakma :cl-csv :cl-fad)))
+
 (in-package :common-lisp)
-;;;(provide market.utils)
 
 (defpackage utils
 	(:use common-lisp
 				drakma
-				cl-csv)
+				cl-csv
+				cl-fad)
 	(:export with-gensyms
 					 download-file
 					 today
+					 now
 					 with-download-csv))
 
 (in-package :utils)
@@ -32,7 +36,7 @@
 
 (defun today ()
 	(labels ((n-to-0n (n)
-						 (if (and (< n 10) (> n 0))
+						 (if (and (< n 10) (>= n 0))
 								 (concatenate 'string "0" (write-to-string n))
 								 (write-to-string n))))
 		(multiple-value-bind (sec min hour d m y) (get-decoded-time)
@@ -41,7 +45,7 @@
 
 (defun now ()
 	(labels ((n-to-0n (n)
-						 (if (and (< n 10) (> n 0))
+						 (if (and (< n 10) (>= n 0))
 								 (concatenate 'string "0" (write-to-string n))
 								 (write-to-string n))))
 		(multiple-value-bind (sec min hour d m y)	(get-decoded-time)
@@ -49,10 +53,11 @@
 							(concatenate 'string (write-to-string y) "-" (n-to-0n m) "-" (n-to-0n d)) ))))
 
 
-(defmacro with-download-csv (uri file-name &optional (data-sym :data) &body body)
-	(progn
-		(download-file uri file-name)
-		(setf cl-csv:*default-external-format* :sjis)
-		`(let ((,data-sym ,(cl-csv:read-csv file-name :trim-outer-whitespace t)))
-			 ,@body)
-		(cl-fad:delete-directory-and-files file-name)))
+(defmacro with-download-csv (uri (data-sym &key (encoding :utf-8)) &body body)
+					(with-gensyms (file-name)
+						`(progn
+							 (download-file ,uri ,file-name)
+							 (setf cl-csv:*default-external-format* ,encoding)
+							 (let ((,data-sym (cl-csv:read-csv ,file-name :trim-outer-whitespace t)))
+								 ,@body)
+							 (cl-fad:delete-directory-and-files ,file-name))))
