@@ -1,27 +1,69 @@
-(eval-when (:compile-toplevel :load-toplevel)
-	(load "database.lisp")
-	(load "spider.lisp"))
+;;;(eval-when (:compile-toplevel)
+;;;	(ql:quickload '(:clsql :clsql-sqlite3))
+;;;	(require 'crawl)
+;;;	(require 'market.database))
 
-(in-package :common-lisp)
+(in-package :market.dbi)
 
-(defpackage market.data
-	(:use common-lisp
-				market.data
-				clsql
-				clsql-sqlite3))
 
-(clsql:def-view-class test0()
-	((test0-id 
-		:accessor test0-id 
-		:initarg :test0-id 
-		:type integer 
+(clsql:def-view-class names()
+	((code
+		:db-kind :join
+		:db-info (:join-class stocks :home-key code :foreign-key code)
+		:accessor code
+		:initarg :code
+		:type integer
+		:db-constraints (:not-null :unique :primary-key))
+	 (name
+		:accessor name
+		:initarg :name
+		:type string)))
+
+(clsql:def-view-class stocks()
+	((id 
+		:accessor id
+		:initarg :id
+		:type integer
 		:db-kind :key 
-		:db-constraints (:not-null :unique))
-	 (test0-string
-		:accessor test0-string
-		:initarg :test0-string
-		:type (clsql:varchar 10))
-	 (test0-bool
-		:accessor test0-bool
-		:initarg :test0-bool
-		:type boolean)))
+		:db-constraints (:not-null :unique :primary-key))
+	 (date
+		:accessor date
+		:initarg :date
+		:type date)
+	 (code
+		:db-kind :join
+		:db-info (:join-class names :home-key code :foreign-key code)
+		:accessor code
+		:initarg :code
+		:type integer
+		:db-constraints :not-null)
+	 (market-id
+		:db-kind :join
+		:db-info (:joinclass market-names :home-key market-id :foreign-key id)
+		:accessor market-id
+		:initarg :market-id
+		:type integer)
+	 (open
+		:accessor open
+		:initarg :open
+		:type float)
+	 (high
+		:accessor high
+		:initarg :high
+		:type float)
+	 (low
+		:accessor low
+		:initarg :low
+		:type float)
+	 (close
+		:accessor close
+		:initarg :close
+		:type float)
+	 (volume
+		:accessor volume
+		:initarg :volume
+		:type integer)
+	 (adjusted
+		:accessor adjusted
+		:initarg :adjusted
+		:type float)))

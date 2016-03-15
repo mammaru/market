@@ -2,7 +2,7 @@
 
 (defpackage market
 	(:use common-lisp
-				market.utils)
+				util)
 	(:export stock
 					 update
 					 get-data
