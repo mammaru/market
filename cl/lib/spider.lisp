@@ -1,5 +1,5 @@
-(eval-when (:compile-toplevel :load-toplevel)
-	(ql:quickload '(:drakma :jp)))
+;;;(eval-when (:compile-toplevel :load-toplevel)
+;;;	(ql:quickload '(:drakma :jp)))
 
 (in-package :common-lisp)
 

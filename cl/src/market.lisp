@@ -1,14 +1,19 @@
 (in-package :common-lisp)
 
-(defpackage market
+(defpackage common-lisp-market
 	(:use common-lisp
-				util)
+				util
+				crawl
+				dbi)
+	(:nicknames cl-mkt)
+	(:shadow open close database)
+	;;;(:shadowing-import-from )
 	(:export stock
 					 update
 					 get-data
 					 get-last-modified))
 
-(in-package :market)
+(in-package :common-lisp-market)
 
 (defclass market-data ()
 	((database-name
@@ -63,7 +68,7 @@
 (defmethod update2 ((mk-data stock))
 	(with-slots ((db database)) mk-data
 		(if (outdated-p mk-data)
-				(store data db)
+				;(store data db)
 				t))
 	(call-next-method))
 

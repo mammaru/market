@@ -3,17 +3,16 @@
 
 (in-package :common-lisp)
 
-(defpackage market.database-interface
+(defpackage database-interface
 	(:use common-lisp
 				clsql
 				clsql-sqlite3)
 	(:nicknames dbi)
-	(:shadow open
-					 close)
+	(:import-from :clsql def-view-class)
 	(:export database
 					 store))
 
-(in-package :market.database-interface)
+(in-package :database-interface)
 
 (defclass database ()
 	((adoptor
