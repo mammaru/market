@@ -33,34 +33,31 @@
 
 (clsql:def-view-class market ()
 	((id
-		;;;:accessor id
+		:db-kind :key
 		:initarg :id
 		:type integer
-		:db-constraints (:not-null :unique :primary-key))
+		:db-constraints (:not-null :unique))
 	 (name
-		;;;:accessor market-name
 		:initarg :name
 		:type (varchar 100)) ))
 
 (clsql:def-view-class industry ()
 	((id
-		;;;:accessor id
+		:db-kind :key
 		:initarg :id
 		:type integer
-		:db-constraints (:not-null :unique :primary-key))
+		:db-constraints (:not-null :unique))
 	 (type
-		;;;:accessor industry-type
 		:initarg :type
 		:type (varchar 100))) )
 
 (clsql:def-view-class company ()
 	((code
-		;;;:accessor code
+		:db-kind :key
 		:initarg :code
 		:type integer
-		:db-constraints (:not-null :unique :primary-key))
+		:db-constraints (:not-null :unique))
 	 (name
-		;;;:accessor name
 		:initarg :name
 		:type (varchar 100))
 	 (market-id
@@ -86,15 +83,13 @@
 
 (clsql:def-view-class stock (value)
 	((date
-		:accessor date
 		:initarg :date
 		:type date)
 	 (company-code
 		:db-kind :join
-		;;;:accessor company-code
 		:initarg :code
 		:type integer
-		:db-constraints :not-null)
+		:db-constraints (:not-null))
 	 (company
 		:accessor stock-company
 		:db-kind :join
