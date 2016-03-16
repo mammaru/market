@@ -13,11 +13,11 @@
 ;(require 'clsql-sqlite3)
 ;(require 'mecab)
 
-(defparameter *src/lib* (merge-pathnames #P"lib/" *src*))
+(defparameter *src/lib-path* (merge-pathnames #P"lib/" *src-path*))
 (compile-file (merge-pathnames #P"util.lisp" *root*))
 (load (merge-pathnames #P"util.lisp" *root*))
 
-(util.pathnames:walk-directory *src/lib* #'compile-file)
-(util.pathnames:walk-directory *src/lib* #'load)
-(util.pathnames:walk-directory *src* #'compile-file)
-(util.pathnames:walk-directory *src* #'load)
+(util.pathnames:walk-directory *src/lib-path* #'compile-file)
+(util.pathnames:walk-directory *src/lib-path* #'load)
+(util.pathnames:walk-directory *src-path* #'compile-file)
+(util.pathnames:walk-directory *src-path* #'load)

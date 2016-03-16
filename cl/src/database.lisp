@@ -3,7 +3,7 @@
 
 (in-package :common-lisp)
 
-(defpackage market.dbi
+(defpackage market.database-interface
 	(:use common-lisp
 				clsql
 				clsql-sqlite3)
@@ -13,7 +13,7 @@
 	(:export database
 					 store))
 
-(in-package :market.dbi)
+(in-package :market.database-interface)
 
 (defclass database ()
 	((adoptor
