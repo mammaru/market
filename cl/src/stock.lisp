@@ -3,97 +3,97 @@
 ;;;	(require 'crawl)
 ;;;	(require 'market.database))
 
-(in-package :cl-mkt)
+(in-package :dbi)
 
-(clsql:def-view-class value ()
+(def-view-class value ()
 	((open
-		:accessor open
 		:initarg :open
 		:type float)
 	 (high
-		:accessor high
 		:initarg :high
 		:type float)
 	 (low
-		:accessor low
 		:initarg :low
 		:type float)
 	 (close
-		:accessor close
 		:initarg :close
 		:type float)
 	 (volume
-		:accessor volume
 		:initarg :volume
 	 :type integer)
 	 (adjusted
-		:accessor adjusted
 		:initarg :adjusted
 		:type float) ))
 
-(clsql:def-view-class market ()
+(def-view-class stock (value)
 	((id
-		:db-kind :key
 		:initarg :id
-		:type integer
-		:db-constraints (:not-null :unique))
-	 (name
-		:initarg :name
-		:type (varchar 100)) ))
-
-(clsql:def-view-class industry ()
-	((id
 		:db-kind :key
-		:initarg :id
 		:type integer
-		:db-constraints (:not-null :unique))
-	 (type
-		:initarg :type
-		:type (varchar 100))) )
+		:db-constraints :not-null)
+	 (date
+		:initarg :date
+		:type date))
+	(:base-table stock))
 
-(clsql:def-view-class company ()
+(def-view-class company ()
 	((code
 		:db-kind :key
 		:initarg :code
 		:type integer
-		:db-constraints (:not-null :unique))
+		:db-constraints :not-null)
 	 (name
 		:initarg :name
 		:type (varchar 100))
-	 (market-id
+	 (stock-id
 		:initarg :market-id
 		:type integer)
-	 (market
-		:accessor stock-market
+	 (stock
+		:accessor company-stock
 		:db-kind :join
-		:db-info (:join-class market
-							:home-key market-id
+		:db-info (:join-class stock
+							:home-key stock-id
 							:foreign-key id
-							:set nil))
+							:set t)) ))
+
+(def-view-class industry ()
+	((id
+		:db-kind :key
+		:initarg :id
+		:type integer
+		:db-constraints :not-null)
+	 (type
+		:initarg :type
+		:type (varchar 100))
+	 (company-code
+		:initarg :company-code
+		:type integer)
+	 (company
+		:accessor industry-company
+		:db-kind :join
+		:db-info (:join-class company
+							:home-key company-code
+							:foreign-key code
+							:set t)) ))
+
+(def-view-class market ()
+	((id
+		:db-kind :key
+		:initarg :id
+		:type integer
+		:db-constraints :not-null)
+	 (name
+		:initarg :name
+		:type (varchar 100))
 	 (industry-id
 		:initarg :industry-id
 		:type integer)
 	 (industry
-		:accessor stock-industry
+		:accessor market-industry
 		:db-kind :join
 		:db-info (:join-class industry
 							:home-key industry-id
 							:foreign-key id
 							:set nil)) ))
 
-(clsql:def-view-class stock (value)
-	((date
-		:initarg :date
-		:type date)
-	 (company-code
-		:db-kind :join
-		:initarg :code
-		:type integer
-		:db-constraints (:not-null))
-	 (company
-		:accessor stock-company
-		:db-kind :join
-		:db-info (:join-class company
-							:home-key company-code
-							:foreign-key code
-							:set nil) )))
+

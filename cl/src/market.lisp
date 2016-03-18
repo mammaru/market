@@ -8,7 +8,7 @@
 	(:nicknames cl-mkt)
 	(:shadow open close database)
 	;;;(:shadowing-import-from )
-	(:export stock
+	(:export mk-stock
 					 update
 					 get-data
 					 get-last-modified))
@@ -27,7 +27,7 @@
 		:initform nil
 		:reader last-modified)))
 
-(defclass stock (market-data)
+(defclass mk-stock (market-data)
 	((database-name
 	 :initform "2016.sqlite3")))
 
@@ -37,10 +37,10 @@
 (defgeneric get-data (data code)
 	(:documentation "Import data from database"))
 
-(defmethod initialize-instance :after ((data stock) &key)
+(defmethod initialize-instance :after ((data mk-stock) &key)
 	())
 
-(defmethod get-last-modified ((data stock))
+(defmethod get-last-modified ((data mk-stock))
 	(with-slots ((db-name database-name)) data
 		(clsql-sys:with-database (con db-name :if-exists :old :database-type :sqlite3)
 			(let ((last-modified (clsql-sys:query "select max(id), date from datings" :database con :flatp t)))
@@ -49,7 +49,7 @@
 (defmethod update ((data market-data))
 	(pprint "parent class method called"))
 
-(defmethod update ((data stock))
+(defmethod update ((data mk-stock))
 	(if (not (string= (today) (get-last-modified data)))
 			(progn
 				(download-file "http://k-db.com/?p=all&download=csv" "daily.csv")
@@ -62,17 +62,17 @@
 			t)
 	(call-next-method))
 
-(defmethod outdated-p ((mk-data stock))
+(defmethod outdated-p ((mk-data mk-stock))
 	(if (not (string= (today) (get-last-modified mk-data))) t nil))
 
-(defmethod update2 ((mk-data stock))
+(defmethod update2 ((mk-data mk-stock))
 	(with-slots ((db database)) mk-data
 		(if (outdated-p mk-data)
 				;(store data db)
 				t))
 	(call-next-method))
 
-(defmethod get-data ((data stock) code)
+(defmethod get-data ((data mk-stock) code)
 	(with-slots ((db-name database-name)) data
 			(clsql-sys:with-database (con db-name :if-exists :old :database-type :sqlite3)
 				(let ((stmt (concatenate 'string "select dating_id, code, open, high, low, close from prices where code = " (write-to-string code))))

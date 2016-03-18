@@ -7,10 +7,11 @@
 	(:use common-lisp
 				clsql
 				clsql-sqlite3)
-	(:nicknames dbi)
 	(:import-from :clsql def-view-class)
+	(:nicknames dbi)
 	(:export database
-					 store))
+					 store
+					 defdata))
 
 (in-package :database-interface)
 
@@ -47,4 +48,8 @@
 															:attributes attr
 															:values d
 															:database con) ))))
+
+(defmacro defdata (data-name (&optional parent) &body body)
+	`(def-view-class ,data-name ,(if parent `(,parent) `())
+		 ,@body))
 
