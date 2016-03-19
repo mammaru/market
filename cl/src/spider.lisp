@@ -1,7 +1,7 @@
 ;;;(eval-when (:compile-toplevel :load-toplevel)
 ;;;	(ql:quickload '(:drakma :jp)))
 
-(in-package :common-lisp)
+(in-package :cl-user)
 
 (defpackage crawl
 	(:use common-lisp

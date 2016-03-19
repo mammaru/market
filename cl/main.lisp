@@ -1,4 +1,4 @@
-(in-package :common-lisp)
+(in-package :cl-user)
 
 (defparameter *root* (truename "./"))
 (defparameter *lib-path* (merge-pathnames #P"lib/" *root*))

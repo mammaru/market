@@ -1,4 +1,4 @@
-(in-package :common-lisp)
+(in-package :cl-user)
 
 (defpackage common-lisp-market
 	(:use common-lisp
@@ -7,7 +7,6 @@
 				dbi)
 	(:nicknames cl-mkt)
 	(:shadow open close database)
-	;;;(:shadowing-import-from )
 	(:export mk-stock
 					 update
 					 get-data

@@ -4,6 +4,7 @@
 ;;;	(require 'market.database))
 
 (in-package :dbi)
+(asdf:operate 'asdf:load-op 'clsql-sqlite3)
 
 (def-view-class value ()
 	((open
