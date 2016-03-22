@@ -6,4 +6,4 @@
 (load (merge-pathnames #P"util.lisp" *root*))
 
 ;;;(load-all *lib-path*)
-(util:load-all *src-path* :compile t)
+(util:load-all *src-path* :compile t :priority-files '("spider.lisp"))

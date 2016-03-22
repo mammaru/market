@@ -8,6 +8,7 @@
 				clsql
 				clsql-sqlite3)
 	;;;(:import-from :clsql def-view-class connect create-view-from-class insert-records)
+	(:shadow open close)
 	(:nicknames dbi)
 	(:export database
 					 create-tables
@@ -32,7 +33,7 @@
 
 (defmethod initialize-instance :after ((db database) &key)
 	(with-slots ((ad adoptor) (bk back-end) (con connection)) db
-		(setf con (connect '(bk) :if-exists :old :database-type ad)) ))
+		(setf con (connect bk :if-exists :old :database-type ad)) ))
 
 (defmethod create-tables ((db database) view-classes)
 	(with-slots ((con connection)) db

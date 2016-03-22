@@ -1,4 +1,4 @@
-(eval-when (:compile-toplevel)
+(eval-when (:compile-toplevel :load-toplevel)
 	(ql:quickload '(:drakma :cl-csv	:cl-fad)))
 
 (in-package :cl-user)
@@ -8,10 +8,10 @@
 				drakma
 				cl-csv
 				cl-fad)
+	(:shadow compile)
 	(:export with-gensyms
 					 download-file
 					 today
-					 now
 					 with-download-csv
 					 load-all))
 
@@ -21,18 +21,21 @@
 	`(let ,(mapcar #'(lambda (s) `(,s (gensym))) syms)
 		 ,@body))
 
-;;;(defmacro with-gensyms ((&rest names) &body body)
-;;;	`(let ,(loop for n in names collect `(,n (gensym)))
-;;;		 ,@body))
-
-(defun load-all (dir-name &key compile)
+(defun load-all (dir-name &key compile priority-files)
+	(print compile)
+	(print priority-files)
 	(if compile
-			(walk-directory dir-name
-											#'compile-file
-											:test (lambda (x) (if (string= (pathname-type x) "lisp") t))))
+			(progn
+				(if priority-files
+						(mapcar #'compile-file (mapcar (lambda (x) (merge-pathnames dir-name x)) priority-files)))
+				(walk-directory dir-name
+												#'compile-file
+												:test (lambda (x) (if (string= (pathname-type x) "lisp") t)) )))
+	(if priority-files
+			(mapcar #'load (mapcar (lambda (x) (merge-pathnames dir-name x)) priority-files)))
 	(walk-directory dir-name
 									#'load
-									:test (lambda (x) (if (string= (pathname-type x) "fasl") t))))
+									:test (lambda (x) (if (string= (pathname-type x) "fasl") t)) ))
 
 (defun download-file (uri filename)
   (with-open-file (out filename
@@ -52,16 +55,6 @@
 		(multiple-value-bind (sec min hour d m y) (get-decoded-time)
 			(values (concatenate 'string (write-to-string y) "-" (n-to-0n m) "-" (n-to-0n d))
 							(concatenate 'string (n-to-0n hour) ":" (n-to-0n min) ":" (n-to-0n sec)) ))))
-
-(defun now ()
-	(labels ((n-to-0n (n)
-						 (if (and (< n 10) (>= n 0))
-								 (concatenate 'string "0" (write-to-string n))
-								 (write-to-string n))))
-		(multiple-value-bind (sec min hour d m y)	(get-decoded-time)
-			(values	(concatenate 'string (n-to-0n hour) ":" (n-to-0n min) ":" (n-to-0n sec))
-							(concatenate 'string (write-to-string y) "-" (n-to-0n m) "-" (n-to-0n d)) ))))
-
 
 (defmacro with-download-csv (uri (data-sym &key (encoding :utf-8)) &body body)
 					(with-gensyms (file-name)

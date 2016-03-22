@@ -8,7 +8,7 @@
 	(:nicknames cl-mkt)
 	(:shadow open close database)
 	(:export mk-stock
-					 update
+					 update-database
 					 get-data
 					 get-last-modified))
 
@@ -30,7 +30,7 @@
 	((database-name
 	 :initform "2016.sqlite3")))
 
-(defgeneric update (data)
+(defgeneric update-database (data)
 	(:documentation "Update database"))
 
 (defgeneric get-data (data code)
@@ -45,10 +45,10 @@
 			(let ((last-modified (clsql-sys:query "select max(id), date from datings" :database con :flatp t)))
 				(cadar last-modified) ))))
 
-(defmethod update ((data market-data))
+(defmethod update-database ((data market-data))
 	(pprint "parent class method called"))
 
-(defmethod update ((data mk-stock))
+(defmethod update-database ((data mk-stock))
 	(if (not (string= (today) (get-last-modified data)))
 			(progn
 				(download-file "http://k-db.com/?p=all&download=csv" "daily.csv")
@@ -57,8 +57,7 @@
 							 (date (caar daily-data))
 							 (column-name (cadr daily-data)))
 					(pprint date)
-					(pprint column-name) ))
-			t)
+					(pprint column-name) )))
 	(call-next-method))
 
 (defmethod outdated-p ((mk-data mk-stock))
@@ -78,7 +77,6 @@
 ;;					(pprint stmt)
 					(let ((stock (clsql-sys:query stmt :database con)))
 						(pprint stock) )))))
-
 
 
 
