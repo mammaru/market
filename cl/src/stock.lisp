@@ -3,30 +3,10 @@
 ;;;	(require 'crawl)
 ;;;	(require 'market.database))
 
-(in-package :dbi)
-(asdf:operate 'asdf:load-op 'clsql-sqlite3)
+(in-package :mktbase)
+(annot:enable-annot-syntax)
 
-(def-view-class value ()
-	((open
-		:initarg :open
-		:type float)
-	 (high
-		:initarg :high
-		:type float)
-	 (low
-		:initarg :low
-		:type float)
-	 (close
-		:initarg :close
-		:type float)
-	 (volume
-		:initarg :volume
-	 :type integer)
-	 (adjusted
-		:initarg :adjusted
-		:type float) ))
-
-(def-view-class stock (value)
+(def-view-class stock (price-movement)
 	((id
 		:initarg :id
 		:db-kind :key
@@ -97,4 +77,21 @@
 							:foreign-key id
 							:set nil)) ))
 
+@export
+(define-data-class jpstock (stock company industry market) ())
 
+(defmethod store ((db jpstock))
+	(with-slots ((con connection) (data cache-data)) db
+		(let ((tbl-name (car data)) (attr (cadr data)) (dat (cddr data)))
+			(dolist (d dat)
+				(insert-records :into tbl-name
+												:attributes attr
+												:values d
+												:database con) ))))
+
+(defmethod find-by-code ((db jpstock) code)
+	(with-slots ((con connection) (data cache-data)) db
+		(let ((stmt (concatenate 'string "select dating_id, code, open, high, low, close from prices where code = " (write-to-string code))))
+			(pprint stmt)
+			(setf data (query stmt :database con))
+			data )))

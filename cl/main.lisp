@@ -1,5 +1,7 @@
 (in-package :cl-user)
 
+(defparameter *environment* "development")
+
 (defparameter *root* (truename "./"))
 (defparameter *lib-path* (merge-pathnames #P"lib/" *root*))
 (defparameter *src-path* (merge-pathnames #P"src/" *root*))
