@@ -11,8 +11,7 @@
 				clsql-sqlite3)
 	(:import-from :alexandria with-gensyms)
 	(:shadow database get update)
-	(:nicknames mktbase)
-	(:export database))
+	(:nicknames mktbase))
 
 (in-package :market.base)
 (annot:enable-annot-syntax)
@@ -72,17 +71,15 @@
 
 
 ;;; utilities
-@export
+;@export
 (defmacro define-data-class (data-name (&rest tables) &body body)
 	(with-gensyms (dbvar convar)
 		`(progn
-			 ;@export
+			 @export
 			 (defclass ,data-name (database) ())		 
 			 
-			 ;@export
 			 (defmethod migrate ((,dbvar ,data-name))
 				 (with-slots ((,convar connection)) ,dbvar
-					 ;(create-view-from-class ',(first tables))))
 					 ,@(mapcar #'(lambda (tb) `(unless (table-exists-p ,(string tb) :database ,convar) (create-view-from-class ',tb :database ,convar))) tables)))
 			 ,@body)))
 
