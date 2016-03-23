@@ -1,15 +1,14 @@
 (in-package :cl-user)
+(load (merge-pathnames "load.lisp" *src-path*))
 
-(defpackage market
-	(:use common-lisp
-				market.base)
-	(:nicknames mkt)
-	(:shadow open close update))
+(cond ((string= *environment* "development")
+			 (defparameter *db-config* `(:adoptor :sqlite3 :back-end (,(concatenate 'string (namestring *data-path*) "test.sqlite3")))) ))
 
-(in-package :market)
+;(shadow 'update)
+(use-package :market.base)
 
-(defparameter db-config '(:adoptor :sqlite3 :back-end ("test.sqlite3")))
 
-(market.base:update (make-instance 'jpstock :db-config db-config))
+(make-instance 'jpstock :db-config *db-config*)
+(update (make-instance 'jpstock :db-config *db-config*) (make-instance 'k-db))
 
 ;(find-by-id 'jpstock 'stock 0)

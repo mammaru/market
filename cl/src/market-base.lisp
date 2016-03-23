@@ -31,9 +31,11 @@
 (defgeneric save (db table-name data)
 	(:documentation "save data of list form"))
 
-(defgeneric update (db)
-	(:documentation "Update database"))
+@export
+(defgeneric update (db sp)
+	(:documentation "Update specified database by specified spider"))
 
+@export
 (defgeneric find-by-id (db table-name id)
 	(:documentation "get data by specifing id"))
 
@@ -45,7 +47,7 @@
 		(migrate db)))
 
 @export
-(defmethod save ((db database) table-name data)
+(defmethod save ((db database ) table-name data)
 	(with-slots ((con connection)) db
 		(insert-records :into table-name
 										;;;:attributes st-attr
@@ -85,19 +87,18 @@
 ;;; utilities
 ;@export
 (defmacro define-data-class (data-name (&rest tables) &body methods)
-	(with-gensyms (dbvar convar)
+	(with-gensyms (dbvar convar spvar)
 		(labels ((make-methods (x)
 							 (loop for item in x
 									collect	(destructuring-bind (sp-name (data-var) &body body) item
 														`(@export
-															(defmethod ,sp-name (,data-var)
-																,@body))))))
+															(defmethod update ((,dbvar ,data-name) (,spvar ,sp-name))
+																(with-scrape ,sp-name (,data-var)
+																	,@body) ))))))
 			`(progn
 				 @export
-				 (defclass ,data-name (database) ())		 
-				 
+				 (defclass ,data-name (database) ())
 				 (defmethod migrate ((,dbvar ,data-name))
 					 (with-slots ((,convar connection)) ,dbvar
 						 ,@(mapcar #'(lambda (tb) `(unless (table-exists-p ,(string tb) :database ,convar) (create-view-from-class ',tb :database ,convar))) tables)))
-				 
-				 ,@(funcall #'make-methods (car methods))) )))
+				 ,@(car (funcall #'make-methods methods))) )))

@@ -1,4 +1,4 @@
-(eval-when (:compile-toplevel :load-toplevel)
+(eval-when (:compile-toplevel :load-toplevel :execute)
 	(ql:quickload '(:drakma :cl-csv	:cl-fad)))
 
 (in-package :cl-user)

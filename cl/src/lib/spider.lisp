@@ -5,6 +5,7 @@
 
 (defpackage crawl
 	(:use common-lisp
+				cl-annot
 				drakma
 				jp)
 	(:nicknames crwl)
@@ -14,6 +15,8 @@
 					 with-scrape))
 
 (in-package :crawl)
+(annot:enable-annot-syntax)
+
 
 (defmacro with-gensyms (syms &body body)
 	`(let ,(mapcar #'(lambda (s) `(,s (gensym))) syms)
@@ -69,6 +72,7 @@
 (defmacro define-spider (sp-name (document sp-root-url &key sleep) &body body)
 	(with-gensyms (sp)
 		`(progn
+			 @export
 			 (defclass ,sp-name (spider)
 				 ,(if sleep
 							`((root-url
