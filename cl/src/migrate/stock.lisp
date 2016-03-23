@@ -3,7 +3,13 @@
 ;;;	(require 'crawl)
 ;;;	(require 'market.database))
 
-(in-package :mktbase)
+(in-package :market.base)
+(annot:enable-annot-syntax)
+
+@export
+(define-spider k-db (doc "http://k-db.com/?p=all&download=csv")
+	(cl-csv:read-csv doc))
+
 
 (def-view-class stock (price-movement)
 	((id
@@ -79,18 +85,26 @@
 
 (define-data-class jpstock (stock company industry market) ())
 
-(defmethod store ((db jpstock))
-	(with-slots ((con connection) (data cache-data)) db
-		(let ((tbl-name (car data)) (attr (cadr data)) (dat (cddr data)))
-			(dolist (d dat)
-				(insert-records :into tbl-name
-												:attributes attr
-												:values d
-												:database con) ))))
+@export
+(defmethod update ((db jpstock))
+	(with-slots ((con connection)) db
+		(with-scrape k-db (data)
+			(let ((date (caar data))
+						;(attr (cadr data))
+						(dat (cddr data))
+						(st-attr '("code" "date" "open" "high" "low" "close" "volume" "adjusted")))
+				(dolist (d dat)
+					(let ((st (list (nth 0 d) date (nth 4 d) (nth 5 d) (nth 6 d) (nth 7 d) (nth 8 d) (nth 7 d))))
+						(insert-records :into "stock"
+														:attributes st-attr
+														:values st
+														:database con) ))))))
 
+@export
 (defmethod find-by-code ((db jpstock) code)
 	(with-slots ((con connection) (data cache-data)) db
 		(let ((stmt (concatenate 'string "select dating_id, code, open, high, low, close from prices where code = " (write-to-string code))))
 			(pprint stmt)
 			(setf data (query stmt :database con))
 			data )))
+

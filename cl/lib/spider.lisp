@@ -70,16 +70,21 @@
 	(with-gensyms (sp)
 		`(progn
 			 (defclass ,sp-name (spider)
-				 ((root-url
-					 :initform ,sp-root-url
-					 :accessor root-url
-					 :type 'string)
-					,(if sleep
-							 `(sleep-time
+				 ,(if sleep
+							`((root-url
+								 :initform ,sp-root-url
+								 :accessor root-url
+								 :type 'string)
+								(sleep-time
 								 :initarg :sleep
 								 :initform ,sleep
 								 :accessor sleep-time
-								 :type 'number) )))
+								 :type 'number))
+							`((root-url
+								 :initform ,sp-root-url
+								 :accessor root-url
+								 :type 'string))))
+			 
 			 (defmethod parse ((,sp ,sp-name))
 				 (with-slots ((,document text)) ,sp
 					 ,@body) ))))

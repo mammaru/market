@@ -4,11 +4,12 @@
 	(:use common-lisp
 				market.base)
 	(:nicknames mkt)
-	(:shadow open close database))
+	(:shadow open close update))
 
 (in-package :market)
 
-(defparameter config '(:adoptor :sqlite3 :back-end ("test.sqlite3")))
-(defparameter jps (make-instance 'jpstock :db-config config))
+(defparameter db-config '(:adoptor :sqlite3 :back-end ("test.sqlite3")))
+
+(market.base:update (make-instance 'jpstock :db-config db-config))
 
 ;(find-by-id 'jpstock 'stock 0)

@@ -6,11 +6,12 @@
 (defpackage market.base
 	(:use common-lisp
 				cl-annot
+				cl-csv
 				crawl
 				clsql
 				clsql-sqlite3)
 	(:import-from :alexandria with-gensyms)
-	(:shadow database get update)
+	(:shadow database get update data)
 	(:nicknames mktbase))
 
 (in-package :market.base)
@@ -27,7 +28,7 @@
 (defgeneric migrate (db)
 	(:documentation "create tables"))
 
-(defgeneric save (db)
+(defgeneric update (db)
 	(:documentation "Update database"))
 
 (defgeneric find-by-id (db table-name id)
