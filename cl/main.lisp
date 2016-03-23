@@ -8,7 +8,6 @@
 (defparameter *src-path* (merge-pathnames #P"src/" *root*))
 
 
-
 (compile-file "load.lisp")
 (load "load.lisp")
 

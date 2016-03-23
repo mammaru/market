@@ -8,7 +8,7 @@
 
 @export
 (define-spider k-db (doc "http://k-db.com/?p=all&download=csv")
-	(cl-csv:read-csv doc))
+	(cl-csv:read-csv doc :trim-outer-whitespace t))
 
 
 (def-view-class stock (price-movement)
@@ -83,7 +83,14 @@
 							:set nil)) ))
 
 
-(define-data-class jpstock (stock company industry market) ())
+(define-data-class jpstock (stock company industry market)
+	(k-db (data)
+				(let ((date (caar data))
+							(dat (cddr data))
+							(st-attr '("code" "date" "open" "high" "low" "close" "volume" "adjusted")))
+					(dolist (d dat)
+						(let ((st (list (nth 0 d) date (nth 4 d) (nth 5 d) (nth 6 d) (nth 7 d) (nth 8 d) (nth 7 d))))
+							(save stock st) )))))
 
 @export
 (defmethod update ((db jpstock))

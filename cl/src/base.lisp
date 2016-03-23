@@ -28,6 +28,9 @@
 (defgeneric migrate (db)
 	(:documentation "create tables"))
 
+(defgeneric save (db table-name data)
+	(:documentation "save data of list form"))
+
 (defgeneric update (db)
 	(:documentation "Update database"))
 
@@ -40,6 +43,14 @@
 		(let ((adoptor (getf config :adoptor)) (back-end (getf config :back-end)))
 			(setf con (connect back-end :if-exists :old :database-type adoptor)) )
 		(migrate db)))
+
+@export
+(defmethod save ((db database) table-name data)
+	(with-slots ((con connection)) db
+		(insert-records :into table-name
+										;;;:attributes st-attr
+										:values data
+										:database con) ))
 
 @export
 (defmethod find-by-id ((db database) table-name id)
@@ -73,43 +84,20 @@
 
 ;;; utilities
 ;@export
-(defmacro define-data-class (data-name (&rest tables) &body body)
+(defmacro define-data-class (data-name (&rest tables) &body methods)
 	(with-gensyms (dbvar convar)
-		`(progn
-			 @export
-			 (defclass ,data-name (database) ())		 
-			 
-			 (defmethod migrate ((,dbvar ,data-name))
-				 (with-slots ((,convar connection)) ,dbvar
-					 ,@(mapcar #'(lambda (tb) `(unless (table-exists-p ,(string tb) :database ,convar) (create-view-from-class ',tb :database ,convar))) tables)))
-			 ,@body)))
-
-
-
-
-;;;(setf cl-csv:*default-external-format* :sjis)
-
-;;;(time (cl-csv:read-csv #P"daily.csv"))
-
-;;;(caddr (cl-csv:read-csv #P"daily.csv" :trim-outer-whitespace t))
-
-;;;(let ((data (cl-csv:read-csv #P"daily.csv" :trim-outer-whitespace t)))
-;;;	(values (first data)
-;;;					(rest (mapcar #'first data))))
-		 ;(print (mapcar #'read-from-string (loop :for row :in (rest data)
-			;																		:append (rest row)))))))
-
-
-;;;(require 'clsql)
-;;;(require 'clsql-sqlite3)
-
-;;;(clsql:connect '("2016.sqlite3") :database-type :sqlite3)
-;;;(clsql:locally-enable-sql-reader-syntax)
-;;;(clsql:select 'code 'name :from 'names)
-;;;(clsql:disconnect)
-
-
-;;(get-stock "2016.sqlite3" 1002)
-
-
-;;;(get-last-modified "2016.sqlite3")
+		(labels ((make-methods (x)
+							 (loop for item in x
+									collect	(destructuring-bind (sp-name (data-var) &body body) item
+														`(@export
+															(defmethod ,sp-name (,data-var)
+																,@body))))))
+			`(progn
+				 @export
+				 (defclass ,data-name (database) ())		 
+				 
+				 (defmethod migrate ((,dbvar ,data-name))
+					 (with-slots ((,convar connection)) ,dbvar
+						 ,@(mapcar #'(lambda (tb) `(unless (table-exists-p ,(string tb) :database ,convar) (create-view-from-class ',tb :database ,convar))) tables)))
+				 
+				 ,@(funcall #'make-methods (car methods))) )))
