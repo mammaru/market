@@ -7,7 +7,7 @@
 (load (merge-pathnames #P"util.lisp" *src/lib-path*))
 (load (merge-pathnames #P"spider.lisp" *src/lib-path*))
 
-(load (merge-pathnames #P"market-base.lisp" *src-path*))
+(load (merge-pathnames #P"base.lisp" *src-path*))
 (util:load-all (merge-pathnames #P"migrate/" *src-path*) :compile t)
 
 ;;;(load (merge-pathnames #P"mecab.lisp" *src-path*))

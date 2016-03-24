@@ -5,10 +5,6 @@
 
 (in-package :market.base)
 
-(define-spider k-db (doc "http://k-db.com/?p=all&download=csv")
-	(cl-csv:read-csv doc :trim-outer-whitespace t))
-
-
 (def-view-class stock (price-movement)
 	((id
 		:initarg :id
@@ -80,6 +76,9 @@
 							:foreign-key id
 							:set nil)) ))
 
+
+(define-spider k-db (doc "http://k-db.com/?p=all&download=csv")
+	(cl-csv:read-csv doc :trim-outer-whitespace t))
 
 (define-data-class jpstock (stock company industry market)
 	(k-db (data)

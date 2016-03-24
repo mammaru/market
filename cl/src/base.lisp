@@ -1,8 +1,6 @@
 ;;;(eval-when (:compile-toplevel)
 ;;;	(ql:quickload '(:clsql :clsql-sqlite3 cl-annot)))
-
 (in-package :cl-user)
-
 (defpackage market.base
 	(:use common-lisp
 				cl-annot
@@ -10,13 +8,15 @@
 				crawl
 				clsql
 				clsql-sqlite3)
-	(:import-from :alexandria with-gensyms)
+	(:import-from :alexandria
+								:with-gensyms)
 	(:shadow database get update data)
 	(:nicknames mktbase))
-
 (in-package :market.base)
 (annot:enable-annot-syntax)
 
+
+;;; class
 (defclass database ()
 	((config
 		:initarg :db-config
@@ -27,6 +27,9 @@
 ;;; generic functions
 (defgeneric migrate (db)
 	(:documentation "create tables"))
+
+(defgeneric drop (db)
+	(:documentation "drop tables"))
 
 (defgeneric save (db table-name data)
 	(:documentation "save data of list form"))
@@ -39,12 +42,19 @@
 (defgeneric find-by-id (db table-name id)
 	(:documentation "get data by specifing id"))
 
+
 ;;; methods
 (defmethod initialize-instance :after ((db database) &key)
 	(with-slots (config (con connection)) db
 		(let ((adoptor (getf config :adoptor)) (back-end (getf config :back-end)))
 			(setf con (connect back-end :if-exists :old :database-type adoptor)) )
 		(migrate db)))
+
+(defmethod migrate ((db database))
+	(error "migrate method for child class must be defined"))
+
+(defmethod drop ((db database))
+	(error "drop method for child class must be defined"))
 
 @export
 (defmethod save ((db database ) table-name data)
@@ -93,12 +103,20 @@
 									collect	(destructuring-bind (sp-name (data-var) &body body) item
 														`(@export
 															(defmethod update ((,dbvar ,data-name) (,spvar ,sp-name))
-																(with-scrape ,sp-name (,data-var)
+																(let ((,data-var (scrape ,spvar)))
 																	,@body) ))))))
 			`(progn
 				 @export
 				 (defclass ,data-name (database) ())
+
+				 @export
 				 (defmethod migrate ((,dbvar ,data-name))
 					 (with-slots ((,convar connection)) ,dbvar
 						 ,@(mapcar #'(lambda (tb) `(unless (table-exists-p ,(string tb) :database ,convar) (create-view-from-class ',tb :database ,convar))) tables)))
+
+				 @export
+				 (defmethod drop ((,dbvar ,data-name))
+					 (with-slots ((,convar connection)) ,dbvar
+						 ,@(mapcar #'(lambda (tb) `(if (table-exists-p ,(string tb) :database ,convar) (drop-view-from-class ',tb :database ,convar))) tables)))
+
 				 ,@(car (funcall #'make-methods methods))) )))
