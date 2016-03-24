@@ -17,7 +17,7 @@ stocks_monthly <- stocks[endpoints(stocks, "months")]
 #dat <- na.approx(stocks) # linear
 dat <- na.spline(stocks_weekly[,1000:1100])
 dat <- scale(apply(dat, c(1,2), log))
-dat <- na.locf(dat)
+dat <- na.locf(dat)q
 #dat <- na.locf(stocks, fromLast = TRUE)
 
 

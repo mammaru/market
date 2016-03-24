@@ -1,0 +1,16 @@
+# directries
+## black list
+Eigen/
+pf/
+*.dSYM
+
+
+# files
+## black list
+.DS_Store
+*.out
+main
+*.o
+
+## white list
+

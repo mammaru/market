@@ -1,19 +1,20 @@
-# files
-.DS_Store
-.#*
-*.sqlite3
-*.pyc
-*.out
-main
-*.o
-.RData
-.Rhistory
-config.yml
-
 # directries
+## black list
 .bundle/
 log/
 txt/
-Eigen/
-pf/
-*.dSYM
+spiders/
+migrate/
+
+# files
+## black list
+.DS_Store
+.#*
+*.sqlite3
+config.yml
+*.csv
+*.txt
+
+## white list
+!spider.rb
+

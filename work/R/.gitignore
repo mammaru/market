@@ -1,0 +1,11 @@
+# directries
+## black list
+
+
+# files
+## black list
+.RData
+.Rhistory
+
+## white list
+

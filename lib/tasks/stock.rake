@@ -1,55 +1,44 @@
 # coding: utf-8
-require 'yaml'
 require 'date'
 
-ROOT = __dir__
-Dir["#{ROOT}/lib/*.rb"].each do |path|
+Dir["#{LIB_PATH}/**/*.rb"].each do |path|
   require path
 end
 
 namespace :stock do
   
-  task :environment do
-    CONFIG_YAML = "#{ROOT}/lib/config.yml"
-    MIGRATION_DIR = "#{ROOT}/migrate"
-    LOG_DIR = "#{ROOT}/log"
+  task :configuration do
+    @mig_dir = "#{LIB_PATH}/io/migrate"
+    @db_config = CONFIG["db"]
+    @log_path = "#{LOG_DIR}/stock.log"
   end
   
-  task :configuration => :environment do
-    yml = YAML::load(File.open(CONFIG_YAML))
-    @year = yml["year"]
-    @dbconfig = yml["db"]   
-    @daily_config = @dbconfig["daily"]
-    @daily_config["database"] = "#{ROOT}/db/daily/#{@year}.sqlite3"
-    @daily_log = "#{LOG_DIR}/daily.log"
-  end
-  
-  task :configure_connection => :configuration do
-    DB = DataBase.new([@daily_config, @daily_log, MIGRATION_DIR])
+  task :connection => :configuration do
+    DB = DataBase.new([@db_config, @log_path, @mig_dir])
   end
   
   desc "Migrate database"
-  task :migrate => :configure_connection do
+  task :migrate => :connection do
     DB.migrate(ENV["VERSION"] ? ENV["VERSION"].to_i : nil)
   end
   
   desc "Roll back database schema to the previous version"
-  task :rollback => :configure_connection do
+  task :rollback => :connection do
     DB.rollback(ENV["STEP"] ? ENV["STEP"].to_i : 1)
   end
   
   desc "Drop database"
-  task :drop => :configure_connection do
+  task :drop => :connection do
     DB.drop
   end
   
   desc "Retrieves the current schema version number"
-  task :version => :configure_connection do
+  task :version => :connection do
     DB.version
   end
   
-  desc "Update reacent stocks"
-  task :update => :configure_connection do
+  desc "Update recent stocks"
+  task :update => :connection do
     from = Date.parse(DB.last_modified.to_s) + 1
     today = Date.today
     if today.strftime("%Y")==@year.to_s
@@ -64,9 +53,9 @@ namespace :stock do
     end
   end
   
-  namespace :daily do 
+  namespace :daily do
     desc "Store daily values"
-    task :values_of => :configure_connection do
+    task :values_of => :connection do
       date = Date.parse(ENV["DATE"].to_s)
       if date.strftime("%Y")==@year.to_s
         if daily_stocks = Stock::day(date)
@@ -78,7 +67,7 @@ namespace :stock do
     end
 
     desc "Store annual data"
-    task :store => :configure_connection do
+    task :store => :connection do
       nyd = Date.parse("#{@year}-01-01")
       nye = (Date.parse("#{@year}-12-31")<Date.today) ? Date.parse("#{@year}-12-31") : Date.yesterday
       nyd.upto(nye) do |d|
@@ -90,6 +79,4 @@ namespace :stock do
   end
   
 end
-
-  
 
