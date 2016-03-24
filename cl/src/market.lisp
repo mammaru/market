@@ -5,10 +5,11 @@
 			 (defparameter *db-config* `(:adoptor :sqlite3 :back-end (,(concatenate 'string (namestring *data-path*) "test.sqlite3")))) ))
 
 ;(shadow 'update)
-(use-package :market.base)
+;(use-package :market.base)
 
 
-(make-instance 'jpstock :db-config *db-config*)
-(update (make-instance 'jpstock :db-config *db-config*) (make-instance 'k-db))
+(let ((jps (make-instance 'jpstock :db-config *db-config*)) (kdb (make-instance 'k-db)))
+	(update jps kdb)
+	(find-by-id jps "stock" 0))
 
-;(find-by-id 'jpstock 'stock 0)
+

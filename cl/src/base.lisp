@@ -34,11 +34,9 @@
 (defgeneric save (db table-name data)
 	(:documentation "save data of list form"))
 
-@export
 (defgeneric update (db sp)
 	(:documentation "Update specified database by specified spider"))
 
-@export
 (defgeneric find-by-id (db table-name id)
 	(:documentation "get data by specifing id"))
 
@@ -56,7 +54,6 @@
 (defmethod drop ((db database))
 	(error "drop method for child class must be defined"))
 
-@export
 (defmethod save ((db database ) table-name data)
 	(with-slots ((con connection)) db
 		(insert-records :into table-name
@@ -96,7 +93,7 @@
 
 ;;; utilities
 ;@export
-(defmacro define-data-class (data-name (&rest tables) &body methods)
+(defmacro define-data (data-name (&rest tables) &body methods)
 	(with-gensyms (dbvar convar spvar)
 		(labels ((make-methods (x)
 							 (loop for item in x
